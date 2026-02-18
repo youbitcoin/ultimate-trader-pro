@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 # 1. CONFIGURAÇÕES BÁSICAS
 SEU_WHATSAPP = "5521998203486"
-st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
+st.set_page_config(page_title="Ultimate Trader Pro v1", layout="centered")
 
 # 2. ESTILO CSS
 st.markdown(f"""
@@ -53,7 +53,7 @@ if not st.session_state.logado:
     with col_l2:
         u = st.text_input("Usuário / ID")
         p = st.text_input("Senha", type="password")
-        if st.button("DESBLOQUEAR TERMINAL", use_container_width=True):
+        if st.button("Acessar", use_container_width=True):
             if (u == "romildo" or u == "teste") and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
