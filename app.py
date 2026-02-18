@@ -2,28 +2,23 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import time
-import base64
 from datetime import datetime, timedelta
 
 # 1. CONFIGURAÇÕES TÉCNICAS
 SEU_WHATSAPP = "5521998203486" 
 
-st.set_page_config(page_title="Ultimate Trader - Sound Edition", layout="centered")
+st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
-# Função para gerar o som de alerta (Bip curto)
-def play_sound():
-    # Som de bip em base64 para não precisar de arquivo externo
-    audio_base64 = "SUQzBAAAAAAAF1RFTlYAAAANAAADU29mdHdhcmUAZ28AbXAzZm9yZ2UAb3JnACH/4UUAQAAAAAAAAAAAAAAAACQAAAAAAAAAAAABAAAALv/hRQCBAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAQAAAAAAAAC7" 
-    # Link de um som de notificação padrão
-    sound_url = "https://www.soundjay.com/buttons/sounds/button-3.mp3"
-    html_string = f"""
-        <audio autoplay>
-            <source src="{sound_url}" type="audio/mp3">
-        </audio>
-    """
-    st.components.v1.html(html_string, height=0)
+# Função para tocar o som (Melhorada)
+def play_notification():
+    # Som de notificação tipo 'Ding'
+    sound_url = "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+    st.markdown(f"""
+        <iframe src="{sound_url}" allow="autoplay" style="display:none" id="iframeAudio"></iframe>
+        <audio autoplay><source src="{sound_url}" type="audio/ogg"></audio>
+    """, unsafe_allow_html=True)
 
-# CSS Profissional
+# Estilo CSS
 st.markdown(f"""
     <style>
     .stApp {{ background-color: #0b0e14; color: #e6edf3; }}
@@ -33,7 +28,6 @@ st.markdown(f"""
         margin-bottom: 20px; border: 1px solid #30363d;
         display: flex; justify-content: space-around; align-items: center;
     }}
-    .dash-item {{ text-align: center; }}
     .dash-value {{ font-size: 24px; font-weight: bold; color: #fff; }}
     .value-win {{ color: #00e676; }}
     .value-loss {{ color: #ff5252; }}
@@ -61,7 +55,7 @@ if 'som_tocado' not in st.session_state: st.session_state.som_tocado = False
 
 # LOGIN
 if not st.session_state.logado:
-    st.title("Ultimate Trader Pro v1.0")
+    st.title("SISTEMA VIP OTC")
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
         u = st.text_input("Trader ID")
@@ -81,15 +75,17 @@ st.markdown(f"""
         <div class="dash-item"><div style="font-size:12px;color:#8b949e">OPS</div><div class="dash-value">{total_ops}</div></div>
         <div class="dash-item"><div style="font-size:12px;color:#8b949e">WINS</div><div class="dash-value value-win">{st.session_state.historico_win}</div></div>
         <div class="dash-item"><div style="font-size:12px;color:#8b949e">LOSSES</div><div class="dash-value value-loss">{st.session_state.historico_loss}</div></div>
-        <div class="dash-item"><div style="font-size:12px;color:#8b949e">ASSERT.</div><div class="dash-value">{winrate:.1f}%</div></div>
+        <div class="dash-item"><div style="font-size:12px;color:#8b949e">WIN RATE</div><div class="dash-value">{winrate:.1f}%</div></div>
     </div>
     """, unsafe_allow_html=True)
 
-# 4. CONTROLE DE SINAL
+# 4. CONTROLE DE SINAL / FEEDBACK
 if st.session_state.aguardando_resultado:
     st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
-    st.subheader("CONFIRME O RESULTADO")
-    col_w, col_l = st.columns(2)
+    st.subheader("O QUE ACONTECEU NO SINAL?")
+    st.write(f"Par: {st.session_state.ultimo_sinal['ativo']} | Sinal: {st.session_state.ultimo_sinal['direcao']}")
+    
+    col_w, col_l, col_n = st.columns(3)
     with col_w:
         if st.button("✅ WIN", use_container_width=True):
             st.session_state.historico_win += 1
@@ -102,9 +98,14 @@ if st.session_state.aguardando_resultado:
             st.session_state.aguardando_resultado = False
             st.session_state.som_tocado = False
             st.rerun()
+    with col_n:
+        if st.button("⚪ NÃO PEGUEI", use_container_width=True):
+            st.session_state.aguardando_resultado = False
+            st.session_state.som_tocado = False
+            st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
-    st.title("🎯 Ultimate Trader Pro")
+    st.title("🎯 MONITOR QUOTEX PRO")
     c1, c2 = st.columns(2)
     with c1: tf = st.selectbox("TEMPO:", ["M1", "M5"])
     with c2: at = st.selectbox("ATIVO OTC:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BTC/USD"])
@@ -123,9 +124,9 @@ else:
     elif f < 8: sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
     else: sinal, cor = "ANALISANDO... 🔎", "#8b949e"
 
-    # --- DISPARO DO SOM ---
+    # --- TOCA O SOM ---
     if "ANALISANDO" not in sinal and not st.session_state.som_tocado:
-        play_sound()
+        play_notification()
         st.session_state.som_tocado = True
 
     st.markdown(f"<div class='signal-card'><h3>{at}</h3><h1 style='color:{cor} !important; font-size:40px;'>{sinal}</h1>", unsafe_allow_html=True)
