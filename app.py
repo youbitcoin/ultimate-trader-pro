@@ -8,7 +8,7 @@ from datetime import datetime
 # =========================================================
 # CONFIGURAÇÕES
 # =========================================================
-LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1Tb_HBNki4oo5bMqPu6WyKz5RpgUrO4bFCwsWVm-fSLQ-yRwH3P8Qe211BHw18RToRiHJRwZvoXZxts/edit#gid=0"
+LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1KQO6ZcagI0GLCJfI5lEqOiAQSjxe2tln5iaVhc4FkKA/edit?gid=0#gid=0"
 SEU_WHATSAPP = "5521998203486" 
 
 # Extração do ID
