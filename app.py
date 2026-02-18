@@ -8,29 +8,15 @@ from datetime import datetime, timedelta
 SEU_WHATSAPP = "5521998203486"
 st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
-# 2. ESTILO CSS (CORREÇÃO DE POSICIONAMENTO)
+# 2. ESTILO CSS
 st.markdown(f"""
 <style>
-    /* Ajusta o topo para a logo não ser cortada */
-    .block-container {{
-        padding-top: 3rem !important; 
-        padding-bottom: 0rem !important;
-    }}
+    .block-container {{ padding-top: 3rem !important; }}
+    .stApp {{ background: linear-gradient(135deg, #0f172a 0%, #020617 100%); background-attachment: fixed; }}
     
-    .stApp {{
-        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-        background-attachment: fixed;
-    }}
-    
-    /* Logo Estilizada - Centralizada e com margem */
     .logo-text {{
-        font-family: 'Arial Black', sans-serif;
-        font-size: 36px;
-        letter-spacing: -1.5px;
-        text-align: center;
-        margin-bottom: 25px;
-        width: 100%;
-        display: block;
+        font-family: 'Arial Black', sans-serif; font-size: 36px;
+        text-align: center; margin-bottom: 25px; width: 100%; display: block;
     }}
     .logo-ultimate {{ color: #ffffff; }}
     .logo-trader {{ color: #00e676; text-shadow: 0 0 15px rgba(0,230,118,0.5); }}
@@ -39,35 +25,18 @@ st.markdown(f"""
         padding: 2px 6px; border-radius: 4px; margin-left: 5px; vertical-align: middle;
     }}
 
-    /* Estilo dos Inputs */
-    div[data-baseweb="input"] {{
-        background-color: rgba(30, 41, 59, 0.5) !important;
-        border-radius: 10px !important;
-    }}
-
-    /* Containers de Sinais e Dashboard */
     .dash-container, .signal-card {{
         background: rgba(30, 41, 59, 0.6) !important;
-        backdrop-filter: blur(12px);
-        border-radius: 20px;
+        backdrop-filter: blur(12px); border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 20px;
-        text-align: center;
-        margin-top: 5px;
+        padding: 20px; text-align: center; margin-top: 5px;
     }}
 
     .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; font-family: monospace; }}
     
-    .float-wpp {{
-        position: fixed; width: 60px; height: 60px; bottom: 25px; right: 25px;
-        background-color: #25d366; border-radius: 50px;
-        display: flex; align-items: center; justify-content: center;
-        z-index: 9999;
-    }}
+    /* Ajuste para o seletor de ativos aparecer melhor */
+    .stSelectbox label {{ color: #94a3b8 !important; font-weight: bold; }}
 </style>
-<a href="https://wa.me/{SEU_WHATSAPP}" class="float-wpp" target="_blank">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:35px">
-</a>
 """, unsafe_allow_html=True)
 
 # 3. ESTADOS DA SESSÃO
@@ -80,7 +49,6 @@ if 'som' not in st.session_state: st.session_state.som = False
 # 4. TELA DE LOGIN
 if not st.session_state.logado:
     st.markdown('<div class="logo-text"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
-    
     col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     with col_l2:
         u = st.text_input("Usuário / ID")
@@ -89,52 +57,57 @@ if not st.session_state.logado:
             if (u == "romildo" or u == "teste") and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
-            else:
-                st.error("Credenciais incorretas")
     st.stop()
 
 # 5. TERMINAL LOGADO
-# Logo no topo (ajustada para não cortar)
 st.markdown('<div class="logo-text"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
 
 # Dashboard
 total = st.session_state.win + st.session_state.loss
 taxa = (st.session_state.win / total * 100) if total > 0 else 0
-
 st.markdown(f"""
 <div class="dash-container">
     <div style="display: flex; justify-content: space-around;">
-        <div><div style="font-size:11px;color:#94a3b8">OPS</div><div style="font-size:22px; font-weight:bold;">{total}</div></div>
+        <div><div style="font-size:11px;color:#94a3b8">OPS</div><div style="font-size:22px; font-weight:bold; color:white;">{total}</div></div>
         <div><div style="font-size:11px;color:#94a3b8">WINS</div><div style="font-size:22px; font-weight:bold; color:#00e676;">{st.session_state.win}</div></div>
         <div><div style="font-size:11px;color:#94a3b8">LOSSES</div><div style="font-size:22px; font-weight:bold; color:#ff5252;">{st.session_state.loss}</div></div>
-        <div><div style="font-size:11px;color:#94a3b8">ASSERT.</div><div style="font-size:22px; font-weight:bold;">{taxa:.1f}%</div></div>
+        <div><div style="font-size:11px;color:#94a3b8">ASSERT.</div><div style="font-size:22px; font-weight:bold; color:white;">{taxa:.1f}%</div></div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# 6. LÓGICA DE SINAIS
+# 6. LÓGICA DE SINAIS E SELEÇÃO DE ATIVOS
 if st.session_state.aguardando:
-    st.markdown("<div class='signal-card'><h3>CONFIRMAR RESULTADO</h3>", unsafe_allow_html=True)
+    st.markdown("<div class='signal-card'><h3>RESULTADO DO SINAL?</h3>", unsafe_allow_html=True)
     c_w, c_l, c_p = st.columns(3)
-    if c_w.button("WIN", use_container_width=True):
+    if c_w.button("✅ WIN", use_container_width=True):
         st.session_state.win += 1
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
-    if c_l.button("LOSS", use_container_width=True):
+    if c_l.button("❌ LOSS", use_container_width=True):
         st.session_state.loss += 1
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
-    if c_p.button("PULAR", use_container_width=True):
+    if c_p.button("⚪ PULAR", use_container_width=True):
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns([1, 2]) # Coluna do Ativo maior para ler tudo
     tf = c1.selectbox("TEMPO:", ["M1", "M5"])
-    at = c2.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "AUD/CAD (OTC)", "BITCOIN (BTC)"])
+    
+    # LISTA COMPLETA DE ATIVOS
+    lista_ativos = [
+        "EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", 
+        "EUR/GBP (OTC)", "USD/CHF (OTC)", "AUD/USD (OTC)", "NZD/USD (OTC)",
+        "EUR/JPY (OTC)", "GBP/JPY (OTC)", "CAD/JPY (OTC)", "USD/CAD (OTC)",
+        "EUR/CAD (OTC)", "GBP/AUD (OTC)", "AUD/JPY (OTC)", "BITCOIN (BTC)",
+        "ETHEREUM (ETH)", "SOLANA (SOL)", "LITECOIN (LTC)", "RIPPLE (XRP)"
+    ]
+    at = c2.selectbox("ATIVO DISPONÍVEL:", lista_ativos)
 
     now = datetime.now()
     prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0) if tf == "M1" else \
@@ -154,7 +127,7 @@ else:
 
     st.markdown(f"""
     <div class='signal-card'>
-        <h2 style="color:#fff !important; margin-bottom:5px; font-size:24px;">{at}</h2>
+        <h2 style="color:#fff !important; font-size:20px;">{at}</h2>
         <h1 style='color:{cor} !important; font-size:38px; margin:5px 0;'>{sinal}</h1>
         <div class='timer-box'>{int(faltam // 60):02d}:{int(faltam % 60):02d}</div>
     </div>
