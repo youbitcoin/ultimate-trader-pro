@@ -1,11 +1,3 @@
-Entendi o problema. Analisando as imagens, percebi que os campos de login continuam aparecendo porque o Streamlit está renderizando ambos os blocos de código simultaneamente ou mantendo os widgets antigos na memória.
-
-Para resolver isso de uma vez por todas, apliquei uma técnica de encapsulamento total. O código abaixo garante que, se você estiver logado, o Streamlit destrói visualmente a tela de login e só carrega o terminal. Também adicionei o botão flutuante do WhatsApp no canto inferior direito.
-
-🚀 Código Definitivo (Sem vazamento de Login)
-Substitua todo o seu app.py por este código:
-
-Python
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -19,7 +11,7 @@ from datetime import datetime, timedelta
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1Tb_HBNki4oo5bMqPu6WyKz5RpgUrO4bFCwsWVm-fSLQ-yRwH3P8Qe211BHw18RToRiHJRwZvoXZxts/edit#gid=0"
 SEU_WHATSAPP = "5521998203486" 
 
-st.set_page_config(page_title="Ultimate Trader Pro - Quotex", layout="centered")
+st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
 # Estilo Visual e Botão Flutuante
 st.markdown(f"""
@@ -32,9 +24,8 @@ st.markdown(f"""
         border-radius: 10px; padding: 25px; text-align: center;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }}
-    .timer-box {{ font-size: 40px; font-weight: bold; color: #ffffff; margin: 15px 0; font-family: 'Courier New', monospace; }}
+    .timer-box {{ font-size: 40px; font-weight: bold; color: #ffffff; margin: 15px 0; font-family: 'monospace'; }}
     
-    /* Botão Flutuante do WhatsApp */
     .float-wpp {{
         position: fixed; width: 60px; height: 60px; bottom: 20px; right: 20px;
         background-color: #25d366; color: #FFF; border-radius: 50px;
@@ -51,7 +42,7 @@ st.markdown(f"""
     </a>
     """, unsafe_allow_html=True)
 
-# Inicialização Blindada do Estado
+# Inicialização do Estado
 if 'logado' not in st.session_state:
     st.session_state.logado = False
 if 'usuario_nome' not in st.session_state:
@@ -69,87 +60,56 @@ def verificar_acesso():
         return pd.DataFrame({'usuario': ['teste', 'romildo'], 'senha': ['12345', '12345']})
 
 # =========================================================
-# 2. LÓGICA DE TELAS (SWITCH)
+# 2. LÓGICA DE TELAS
 # =========================================================
 
-# Criamos um container vazio que será preenchido conforme o status de login
-main_placeholder = st.empty()
-
+# Se NÃO estiver logado, mostra APENAS o login
 if not st.session_state.logado:
-    # TELA DE LOGIN
-    with main_placeholder.container():
-        st.title("🟢 QUOTEX VIP ACCESS")
-        df_users = verificar_acesso()
+    st.title("ULTIMATE TRADER LOGIN")
+    df_users = verificar_acesso()
+    
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.write("---")
+        u_input = st.text_input("Usuário / ID", key="user_box")
+        p_input = st.text_input("Senha", type="password", key="pass_box")
         
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            st.write("---")
-            u_input = st.text_input("Usuário / ID", key="login_u")
-            p_input = st.text_input("Senha", type="password", key="login_p")
-            
-            if st.button("LOGIN", use_container_width=True):
-                user_match = df_users[df_users['usuario'].astype(str).str.lower() == str(u_input).lower()]
-                if not user_match.empty and str(user_match.iloc[0]['senha']) == str(p_input):
-                    st.session_state.logado = True
-                    st.session_state.usuario_nome = u_input
-                    st.rerun()
-                else:
-                    st.error("Dados incorretos.")
+        if st.button("LOGIN", use_container_width=True):
+            user_match = df_users[df_users['usuario'].astype(str).str.lower() == str(u_input).lower()]
+            if not user_match.empty and str(user_match.iloc[0]['senha']) == str(p_input):
+                st.session_state.logado = True
+                st.session_state.usuario_nome = u_input
+                st.rerun()
+            else:
+                st.error("Dados incorretos.")
+    # Interrompe o script aqui para o terminal não carregar embaixo
+    st.stop()
+
+# Se chegou aqui, é porque está logado. Mostra APENAS o terminal.
 else:
-    # TELA DO TERMINAL
-    with main_placeholder.container():
-        st.sidebar.title("OPÇÕES")
-        st.sidebar.write(f"👤 Trader: **{st.session_state.usuario_nome}**")
-        if st.sidebar.button("SAIR"):
-            st.session_state.logado = False
-            st.rerun()
-
-        st.title("🚀 MONITOR QUOTEX PRO")
-
-        c1, c2 = st.columns(2)
-        with c1:
-            tf = st.selectbox("TIMEFRAME:", ["M1 (1 Minuto)", "M5 (5 Minutos)"], key="tf_sel")
-        with c2:
-            par = st.selectbox("PAR DE MOEDAS:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BTC/USD"], key="par_sel")
-
-        # Lógica de Horário
-        now = datetime.now()
-        if "M1" in tf:
-            prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
-            payout = 91
-        else:
-            prox = now.replace(minute=((now.minute // 5) + 1) * 5 % 60, second=0, microsecond=0)
-            if prox <= now: prox += timedelta(minutes=5)
-            payout = 89
-
-        faltam = (prox - now).total_seconds()
-
-        # --- CARD DE SINAL ---
-        st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
-        st.markdown(f"<span style='color:#00e676; font-weight:bold;'>PAYOUT ATUAL: {payout}%</span>", unsafe_allow_html=True)
-        
-        np.random.seed(int(prox.timestamp()))
-        analise = np.random.randint(0, 100)
-        
-        if analise > 85:
-            sinal, cor, alert_class = "PUT (VENDA) 🔴", "#ff5252", "entry-put"
-        elif analise < 15:
-            sinal, cor, alert_class = "CALL (COMPRA) 🟢", "#00e676", "entry-now"
-        else:
-            sinal, cor, alert_class = "ANALISANDO... 🔍", "#8b949e", ""
-
-        st.markdown(f"<h3>{par}</h3>", unsafe_allow_html=True)
-        st.markdown(f"<h1 style='color: {cor} !important; font-size: 38px;'>{sinal}</h1>", unsafe_allow_html=True)
-
-        if "ANALISANDO" not in sinal:
-            st.markdown(f"<div class='timer-box'>{int(faltam // 60):02d}:{int(faltam % 60):02d}</div>", unsafe_allow_html=True)
-            if 2 < faltam <= 10:
-                st.warning("⚠️ PREPARE A OPERAÇÃO")
-            elif faltam <= 2:
-                st.markdown(f"<div class='{alert_class}'>CLIQUE AGORA! (DELAY 2S)</div>", unsafe_allow_html=True)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        # Atualização em tempo real
-        time.sleep(1)
+    st.sidebar.title("MENU")
+    st.sidebar.write(f"Trader: {st.session_state.usuario_nome}")
+    if st.sidebar.button("SAIR"):
+        st.session_state.logado = False
         st.rerun()
+
+    st.title("TERMINAL PRO QUOTEX")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        tf = st.selectbox("TIMEFRAME:", ["M1 (1 Minuto)", "M5 (5 Minutos)"], key="time_sel")
+    with c2:
+        par = st.selectbox("PAR DE MOEDAS:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BTC/USD"], key="pair_sel")
+
+    now = datetime.now()
+    if "M1" in tf:
+        prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
+        payout = 91
+    else:
+        prox = now.replace(minute=((now.minute // 5) + 1) * 5 % 60, second=0, microsecond=0)
+        if prox <= now: prox += timedelta(minutes=5)
+        payout = 89
+
+    faltam = (prox - now).total_seconds()
+
+    st.markdown("<div
