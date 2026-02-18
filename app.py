@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 SEU_WHATSAPP = "5521998203486"
 st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
-# 2. ESTILO CSS (VISUAL PREMIUM SEM BARRAS)
+# 2. ESTILO CSS (VISUAL ULTRA CLEAN)
 st.markdown(f"""
 <style>
     .stApp {{
@@ -16,49 +16,45 @@ st.markdown(f"""
         background-attachment: fixed;
     }}
     
-    /* Logo Estilizada */
+    /* Logo Estilizada - Sem caixa abaixo */
     .logo-text {{
         font-family: 'Arial Black', sans-serif;
         font-size: 38px;
         letter-spacing: -1.5px;
         text-align: center;
-        margin-top: 20px;
-        margin-bottom: 30px; /* Espaço limpo abaixo do logo */
+        margin-top: 50px;
+        margin-bottom: 10px;
     }}
     .logo-ultimate {{ color: #ffffff; }}
     .logo-trader {{ color: #00e676; text-shadow: 0 0 15px rgba(0,230,118,0.5); }}
     .logo-pro {{ 
-        font-size: 16px; 
-        background: #00e676; 
-        color: #020617; 
-        padding: 2px 6px; 
-        border-radius: 4px; 
-        margin-left: 5px;
-        vertical-align: middle;
+        font-size: 16px; background: #00e676; color: #020617; 
+        padding: 2px 6px; border-radius: 4px; margin-left: 5px; vertical-align: middle;
     }}
 
-    /* Containers Glassmorphism */
+    /* Estilo dos Inputs (Login Menor) */
+    div[data-baseweb="input"] {{
+        background-color: rgba(30, 41, 59, 0.5) !important;
+        border-radius: 10px !important;
+    }}
+
+    /* Containers de Sinais */
     .dash-container, .signal-card {{
         background: rgba(30, 41, 59, 0.6) !important;
         backdrop-filter: blur(12px);
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         padding: 20px;
-        margin-bottom: 20px;
         text-align: center;
     }}
 
-    .dash-value {{ font-size: 26px; font-weight: bold; color: #fff; }}
-    .value-win {{ color: #00e676; }}
-    .value-loss {{ color: #ff5252; }}
-    .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; margin: 10px 0; font-family: monospace; }}
+    .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; font-family: monospace; }}
     
-    /* Botao Whatsapp */
     .float-wpp {{
         position: fixed; width: 60px; height: 60px; bottom: 25px; right: 25px;
         background-color: #25d366; border-radius: 50px;
         display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.4); z-index: 9999;
+        z-index: 9999;
     }}
 </style>
 <a href="https://wa.me/{SEU_WHATSAPP}" class="float-wpp" target="_blank">
@@ -66,70 +62,62 @@ st.markdown(f"""
 </a>
 """, unsafe_allow_html=True)
 
-# 3. ESTADOS DA SESSÃO
+# 3. ESTADOS
 if 'logado' not in st.session_state: st.session_state.logado = False
 if 'aguardando' not in st.session_state: st.session_state.aguardando = False
 if 'win' not in st.session_state: st.session_state.win = 0
 if 'loss' not in st.session_state: st.session_state.loss = 0
 if 'som' not in st.session_state: st.session_state.som = False
 
-# Função para Sair
-def deslogar():
-    st.session_state.logado = False
-    st.session_state.aguardando = False
-    st.rerun()
-
-# 4. PÁGINA DE LOGIN
+# 4. PÁGINA DE LOGIN (CENTRALIZADA E COMPACTA)
 if not st.session_state.logado:
-    st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown('<div class="logo-text"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
     
-    with st.container():
-        st.markdown('<div class="signal-card">', unsafe_allow_html=True)
-        u = st.text_input("Usuário / ID")
-        p = st.text_input("Senha de Acesso", type="password")
-        if st.button("DESBLOQUEAR TERMINAL", use_container_width=True):
+    # Colunas para centralizar e diminuir o tamanho dos campos
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        u = st.text_input("Usuário")
+        p = st.text_input("Senha", type="password")
+        if st.button("ACESSAR", use_container_width=True):
             if (u == "romildo" or u == "teste") and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
             else:
-                st.error("Credenciais Inválidas")
-        st.markdown('</div>', unsafe_allow_html=True)
+                st.error("Credenciais incorretas")
     st.stop()
 
-# 5. TERMINAL LOGADO
-# DASHBOARD NO TOPO
+# 5. TERMINAL (LOGADO)
 total = st.session_state.win + st.session_state.loss
 taxa = (st.session_state.win / total * 100) if total > 0 else 0
 
 st.markdown(f"""
 <div class="dash-container">
     <div style="display: flex; justify-content: space-around;">
-        <div><div style="font-size:11px;color:#94a3b8">OPS</div><div class="dash-value">{total}</div></div>
-        <div><div style="font-size:11px;color:#94a3b8">WINS</div><div class="dash-value value-win">{st.session_state.win}</div></div>
-        <div><div style="font-size:11px;color:#94a3b8">LOSSES</div><div class="dash-value value-loss">{st.session_state.loss}</div></div>
-        <div><div style="font-size:11px;color:#94a3b8">ASSERT.</div><div class="dash-value">{taxa:.1f}%</div></div>
+        <div><div style="font-size:11px;color:#94a3b8">OPS</div><div style="font-size:24px; font-weight:bold;">{total}</div></div>
+        <div><div style="font-size:11px;color:#94a3b8">WINS</div><div style="font-size:24px; font-weight:bold; color:#00e676;">{st.session_state.win}</div></div>
+        <div><div style="font-size:11px;color:#94a3b8">LOSSES</div><div style="font-size:24px; font-weight:bold; color:#ff5252;">{st.session_state.loss}</div></div>
+        <div><div style="font-size:11px;color:#94a3b8">ASSERT.</div><div style="font-size:24px; font-weight:bold;">{taxa:.1f}%</div></div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="logo-text" style="font-size:26px; margin-top:0;"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
+st.markdown('<div class="logo-text" style="font-size:24px; margin-top:0;"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
 
 # 6. LÓGICA DE SINAIS
 if st.session_state.aguardando:
-    st.markdown("<div class='signal-card'><h3>RESULTADO DO SINAL?</h3>", unsafe_allow_html=True)
+    st.markdown("<div class='signal-card'><h3>RESULTADO?</h3>", unsafe_allow_html=True)
     c_w, c_l, c_n = st.columns(3)
-    if c_w.button("✅ WIN", use_container_width=True):
+    if c_w.button("WIN", use_container_width=True):
         st.session_state.win += 1
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
-    if c_l.button("❌ LOSS", use_container_width=True):
+    if c_l.button("LOSS", use_container_width=True):
         st.session_state.loss += 1
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
-    if c_n.button("⚪ PULAR", use_container_width=True):
+    if c_n.button("PULAR", use_container_width=True):
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
@@ -137,8 +125,7 @@ if st.session_state.aguardando:
 else:
     c1, c2 = st.columns(2)
     tf = c1.selectbox("TEMPO:", ["M1", "M5"])
-    lista_ativos = ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "EUR/GBP (OTC)", "BITCOIN (BTC)", "ETHEREUM (ETH)"]
-    at = c2.selectbox("ATIVO:", lista_ativos)
+    at = c2.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "EUR/GBP (OTC)", "BITCOIN (BTC)"])
 
     now = datetime.now()
     prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0) if tf == "M1" else \
@@ -169,10 +156,11 @@ else:
         time.sleep(1)
         st.rerun()
 
-# 7. BOTÃO DE SAIR (RODAPÉ)
+# 7. BOTÃO SAIR
 st.markdown("<br>", unsafe_allow_html=True)
-if st.button("SAIR E VOLTAR À PÁGINA INICIAL", use_container_width=True):
-    deslogar()
+if st.button("SAIR DO SISTEMA", use_container_width=True):
+    st.session_state.logado = False
+    st.rerun()
 
 time.sleep(1)
 st.rerun()
