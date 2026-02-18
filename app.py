@@ -50,7 +50,6 @@ st.markdown("""
 
 # 3. LOGICA DE NAVEGACAO
 if not st.session_state.logado:
-    # TELA DE LOGIN (SEM BOTOES DE RODAPE)
     st.markdown('<div class="logo-text"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
     col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
     with col_l2:
@@ -80,9 +79,8 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    # Lógica de Sinais
     if st.session_state.aguardando:
-        st.markdown("<div class='signal-card'><h3>RESULTADO?</h3>", unsafe_allow_html=True)
+        st.markdown("<div class='signal-card'><h3>RESULTADO DA OPERACAO?</h3>", unsafe_allow_html=True)
         c_w, c_l, c_g, c_p = st.columns(4)
         if c_w.button("WIN", use_container_width=True):
             st.session_state.win += 1
@@ -104,10 +102,19 @@ else:
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
     else:
-        c1, c2, c3 = st.columns(3)
+        # SELETORES COM LISTA COMPLETA
+        c1, c2, c3 = st.columns([0.8, 1, 1.5]) # Ajuste de largura para ler o par
         tf = c1.selectbox("TEMPO:", ["M1", "M5"])
         estrat = c2.selectbox("ESTRATEGIA:", ["Turbo", "Moderada", "Sniper"])
-        at = c3.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BITCOIN"])
+        
+        lista_ativos = [
+            "EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", 
+            "EUR/GBP (OTC)", "USD/CHF (OTC)", "AUD/USD (OTC)", "NZD/USD (OTC)",
+            "EUR/JPY (OTC)", "GBP/JPY (OTC)", "CAD/JPY (OTC)", "USD/CAD (OTC)",
+            "EUR/CAD (OTC)", "GBP/AUD (OTC)", "AUD/JPY (OTC)", "BITCOIN (BTC)",
+            "ETHEREUM (ETH)", "SOLANA (SOL)", "LITECOIN (LTC)", "RIPPLE (XRP)"
+        ]
+        at = c3.selectbox("ATIVO DISPONIVEL:", lista_ativos)
 
         now = datetime.now()
         prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0) if tf == "M1" else \
@@ -126,13 +133,13 @@ else:
             st.markdown(f'<audio autoplay><source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mp3"></audio>', unsafe_allow_html=True)
             st.session_state.som_tocado = True
 
-        st.markdown(f"<div class='signal-card'><h2>{at}</h2><h1 style='color:{cor};'>{sinal}</h1><div class='timer-box'>{int(faltam // 60):02d}:{int(faltam % 60):02d}</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='signal-card'><h2>{at}</h2><h1 style='color:{cor}; font-size:45px;'>{sinal}</h1><div class='timer-box'>{int(faltam // 60):02d}:{int(faltam % 60):02d}</div></div>", unsafe_allow_html=True)
 
         if "ANALISANDO" not in sinal and faltam <= 2:
             st.session_state.aguardando = True
             st.rerun()
 
-    # 5. RODAPE (DENTRO DO IF LOGADO - APARECE APENAS UMA VEZ)
+    # 5. BOTOES DE CONTROLE (UMA UNICA VEZ NO FINAL DO TERMINAL)
     st.markdown("<br>", unsafe_allow_html=True)
     col_btn1, col_btn2 = st.columns(2)
     if col_btn1.button("SAIR DO SISTEMA", use_container_width=True):
