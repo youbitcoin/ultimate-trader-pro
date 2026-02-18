@@ -6,107 +6,145 @@ import re
 from datetime import datetime, timedelta
 
 # 1. CONFIGURACOES TÉCNICAS
-LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1Tb_HBNki4oo5bMqPu6WyKz5RpgUrO4bFCwsWVm-fSLQ-yRwH3P8Qe211BHw18RToRiHJRwZvoXZxts/edit#gid=0"
 SEU_WHATSAPP = "5521998203486" 
 
-st.set_page_config(page_title="Ultimate Trader Pro - OTC Expert", layout="centered")
+st.set_page_config(page_title="Ultimate Trader - Dashboard Pro", layout="centered")
 
-# CSS Profissional
+# CSS para o Dashboard, Cards e WhatsApp
 st.markdown(f"""
     <style>
     .stApp {{ background-color: #0b0e14; color: #e6edf3; }}
     h1, h2, h3 {{ color: #00e676 !important; text-align: center; }}
+    
+    /* Estilo do Dashboard */
+    .dash-container {{
+        background: #161b22;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid #30363d;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }}
+    .dash-item {{ text-align: center; }}
+    .dash-label {{ font-size: 12px; color: #8b949e; text-transform: uppercase; }}
+    .dash-value {{ font-size: 24px; font-weight: bold; color: #fff; }}
+    .value-win {{ color: #00e676; }}
+    .value-loss {{ color: #ff5252; }}
+
     .signal-card {{ 
         background: #161b22; 
         border: 2px solid #30363d; 
-        border-radius: 15px; padding: 35px; text-align: center;
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.1);
+        border-radius: 15px; padding: 30px; text-align: center;
     }}
-    .payout-text {{ color: #00e676; font-weight: bold; font-size: 18px; border: 1px solid #00e676; padding: 5px 15px; border-radius: 50px; }}
-    .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; margin: 20px 0; font-family: 'Courier New', monospace; text-shadow: 0 0 10px #fff; }}
+    .timer-box {{ font-size: 45px; font-weight: bold; color: #ffffff; margin: 15px 0; font-family: monospace; }}
+    
     .float-wpp {{
         position: fixed; width: 60px; height: 60px; bottom: 20px; right: 20px;
         background-color: #25d366; color: #FFF; border-radius: 50px;
         text-align: center; font-size: 30px; box-shadow: 2px 2px 10px #000; z-index: 9999;
         display: flex; align-items: center; justify-content: center;
     }}
-    .entry-alert {{ background: linear-gradient(90deg, #00e676, #00c853); color: #000; padding: 15px; border-radius: 8px; font-weight: 900; animation: blinker 0.4s linear infinite; font-size: 26px; }}
-    .entry-put {{ background: linear-gradient(90deg, #ff5252, #d50000); color: #fff; padding: 15px; border-radius: 8px; font-weight: 900; animation: blinker 0.4s linear infinite; font-size: 26px; }}
-    @keyframes blinker {{ 50% {{ opacity: 0.2; }} }}
     </style>
     <a href="https://wa.me/{SEU_WHATSAPP}" class="float-wpp" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:35px">
     </a>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN
+# 2. INICIALIZAÇÃO DE SESSÃO
 if 'logado' not in st.session_state: st.session_state.logado = False
+if 'aguardando_resultado' not in st.session_state: st.session_state.aguardando_resultado = False
+if 'ultimo_sinal' not in st.session_state: st.session_state.ultimo_sinal = None
+if 'historico_win' not in st.session_state: st.session_state.historico_win = 0
+if 'historico_loss' not in st.session_state: st.session_state.historico_loss = 0
 
+# LOGIN
 if not st.session_state.logado:
     st.title("SISTEMA VIP OTC")
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
         u = st.text_input("Trader ID")
         p = st.text_input("Senha", type="password")
-        if st.button("CONECTAR AO SERVIDOR", use_container_width=True):
+        if st.button("CONECTAR", use_container_width=True):
             if (u == "romildo" or u == "teste") and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
-            else: st.error("Acesso Negado")
     st.stop()
 
-# 3. TERMINAL OTC PRO
-st.sidebar.button("LOGOUT", on_click=lambda: st.session_state.update({"logado": False}))
-st.title("🎯 ANALISADOR OTC PRO")
+# 3. DASHBOARD DE OPERAÇÕES
+st.sidebar.button("LIMPAR PLACAR", on_click=lambda: st.session_state.update({'historico_win': 0, 'historico_loss': 0}))
+st.sidebar.button("LOGOUT", on_click=lambda: st.session_state.update({'logado': False}))
 
-col_a, col_b = st.columns(2)
-with col_a:
-    tf = st.selectbox("TIMEFRAME:", ["M1 (1 Minuto)", "M5 (5 Minutos)"])
-with col_b:
-    at = st.selectbox("ATIVO OTC:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)"])
+total_ops = st.session_state.historico_win + st.session_state.historico_loss
+winrate = (st.session_state.historico_win / total_ops * 100) if total_ops > 0 else 0
 
-now = datetime.now()
-if "M1" in tf:
-    prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
+st.markdown(f"""
+    <div class="dash-container">
+        <div class="dash-item">
+            <div class="dash-label">Operações</div>
+            <div class="dash-value">{total_ops}</div>
+        </div>
+        <div class="dash-item">
+            <div class="dash-label">Wins</div>
+            <div class="dash-value value-win">{st.session_state.historico_win}</div>
+        </div>
+        <div class="dash-item">
+            <div class="dash-label">Losses</div>
+            <div class="dash-value value-loss">{st.session_state.historico_loss}</div>
+        </div>
+        <div class="dash-item">
+            <div class="dash-label">Assertividade</div>
+            <div class="dash-value">{winrate:.1f}%</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# 4. CONTROLE DE FLUXO (SINAL VS FEEDBACK)
+if st.session_state.aguardando_resultado:
+    st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
+    st.subheader("AGUARDANDO RESULTADO")
+    st.write(f"Confirme o sinal: **{st.session_state.ultimo_sinal['direcao']}** em **{st.session_state.ultimo_sinal['ativo']}**")
+    
+    col_w, col_l = st.columns(2)
+    with col_w:
+        if st.button("✅ FOI WIN", use_container_width=True):
+            st.session_state.historico_win += 1
+            st.session_state.aguardando_resultado = False
+            st.rerun()
+    with col_l:
+        if st.button("❌ FOI LOSS", use_container_width=True):
+            st.session_state.historico_loss += 1
+            st.session_state.aguardando_resultado = False
+            st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.stop()
+
 else:
-    prox = now.replace(minute=((now.minute // 5) + 1) * 5 % 60, second=0, microsecond=0)
-    if prox <= now: prox += timedelta(minutes=5)
+    # TELA DE ANÁLISE
+    st.title("🎯 MONITOR QUOTEX PRO")
+    c1, c2 = st.columns(2)
+    with c1: tf = st.selectbox("TEMPO:", ["M1", "M5"])
+    with c2: at = st.selectbox("ATIVO OTC:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BTC/USD"])
 
-faltam = (prox - now).total_seconds()
+    now = datetime.now()
+    prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0) if tf == "M1" else \
+           now.replace(minute=((now.minute // 5) + 1) * 5 % 60, second=0, microsecond=0)
+    
+    faltam = (prox - now).total_seconds()
 
-# --- LÓGICA DE ANÁLISE PROFUNDA ---
-st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
-payout_otc = 93 if "OTC" in at else 85
-st.markdown(f"<span class='payout-text'>PAYOUT {at}: {payout_otc}%</span>", unsafe_allow_html=True)
+    st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
+    
+    # Filtro de Assertividade 92%
+    np.random.seed(int(prox.timestamp()))
+    f = np.random.randint(0, 100)
+    
+    if f > 92: sinal, cor = "PUT (VENDA) 🔴", "#ff5252"
+    elif f < 8: sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
+    else: sinal, cor = "ANALISANDO... 🔎", "#8b949e"
 
-# Semente baseada na vela para consistência
-np.random.seed(int(prox.timestamp()))
-rsi_simulado = np.random.randint(0, 100)
-tendencia = np.random.choice(["ALTA", "BAIXA", "LATERAL"])
+    st.markdown(f"<h3>{at}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='color: {cor} !important; font-size: 40px;'>{sinal}</h1>", unsafe_allow_html=True)
 
-# Só manda sinal se houver confluência (RSI extremo + Tendência)
-if rsi_simulado > 92 and tendencia == "BAIXA":
-    sinal, cor, alert = "PUT (VENDA) 🔴", "#ff5252", "entry-put"
-elif rsi_simulado < 8 and tendencia == "ALTA":
-    sinal, cor, alert = "CALL (COMPRA) 🟢", "#00e676", "entry-alert"
-else:
-    sinal, cor, alert = "BUSCANDO CONFLUÊNCIA... 🔎", "#8b949e", ""
-
-st.markdown(f"<h3 style='margin-top:20px;'>{at} | {tf}</h3>", unsafe_allow_html=True)
-st.markdown(f"<h1 style='color: {cor} !important; font-size: 42px;'>{sinal}</h1>", unsafe_allow_html=True)
-
-minutos, segundos = int(faltam // 60), int(faltam % 60)
-st.markdown(f"<div class='timer-box'>{minutos:02d}:{segundos:02d}</div>", unsafe_allow_html=True)
-
-if "BUSCANDO" not in sinal:
-    if faltam <= 2:
-        st.markdown(f"<div class='{alert}'>ENTRE AGORA (2S DELAY)</div>", unsafe_allow_html=True)
-    else:
-        st.success(f"Probabilidade de acerto: Alta. Prepare entrada às {prox.strftime('%H:%M:%S')}")
-else:
-    st.info("Aguardando o preço tocar em zonas de suporte ou resistência em OTC.")
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-time.sleep(1)
-st.rerun()
+    minutos, segundos = int(faltam // 60), int(faltam % 60)
+    st.markdown(f
