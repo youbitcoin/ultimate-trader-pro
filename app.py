@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 # 1. CONFIGURAÇÕES BÁSICAS
 SEU_WHATSAPP = "5521998203486"
-st.set_page_config(page_title="Ultimate Trader Pro v1", layout="centered")
+st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
 # 2. ESTILO CSS
 st.markdown(f"""
