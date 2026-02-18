@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 SEU_WHATSAPP = "5521998203486"
 st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
-# 2. ESTILO CSS (VISUAL PREMIUM)
+# 2. ESTILO CSS
 st.markdown(f"""
 <style>
     .block-container {{ padding-top: 3rem !important; }}
@@ -33,6 +33,9 @@ st.markdown(f"""
     }}
 
     .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; font-family: monospace; }}
+    
+    /* Cores especiais para botoes de gale */
+    .stButton>button {{ border-radius: 10px; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -73,27 +76,37 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 6. CONFIGURAÇÃO DE ESTRATÉGIA
+# 6. LÓGICA DE SINAIS E RESULTADO
 if st.session_state.aguardando:
-    st.markdown("<div class='signal-card'><h3>RESULTADO DO SINAL?</h3>", unsafe_allow_html=True)
-    c_w, c_l, c_p = st.columns(3)
+    st.markdown("<div class='signal-card'><h3>RESULTADO DA OPERAÇÃO</h3>", unsafe_allow_html=True)
+    c_w, c_l, c_g, c_p = st.columns(4) # Quatro colunas agora
+    
     if c_w.button("✅ WIN", use_container_width=True):
         st.session_state.win += 1
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
+        
     if c_l.button("❌ LOSS", use_container_width=True):
         st.session_state.loss += 1
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
+
+    if c_g.button("🔄 GALE", use_container_width=True, help="Entrada dobrada no próximo minuto"):
+        # No Gale, apenas resetamos o som para tocar de novo se o sinal persistir
+        # E mantemos o estado de aguardando
+        st.session_state.som = False
+        st.toast("🔥 Aguardando Gale...", icon="⚠️")
+        time.sleep(0.5)
+        st.rerun()
+
     if c_p.button("⚪ PULAR", use_container_width=True):
         st.session_state.aguardando = False
         st.session_state.som = False
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
-    # Seletores de Operação
     c1, c2, c3 = st.columns([1, 1, 1])
     tf = c1.selectbox("TEMPO:", ["M1", "M5"])
     estrat = c2.selectbox("ESTRATÉGIA:", ["Turbo (Rápida)", "Moderada", "Sniper (Robusta)"])
@@ -101,13 +114,9 @@ else:
     lista_ativos = ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "EUR/GBP (OTC)", "BITCOIN (BTC)", "ETHEREUM (ETH)"]
     at = c3.selectbox("ATIVO:", lista_ativos)
 
-    # Lógica de Probabilidade baseada no nível escolhido
-    if estrat == "Turbo (Rápida)":
-        threshold = 85  # Mais sinais (15% de chance de CALL ou PUT)
-    elif estrat == "Sniper (Robusta)":
-        threshold = 98  # Pouquíssimos sinais (2% de chance)
-    else:
-        threshold = 92  # Padrão (8% de chance)
+    if estrat == "Turbo (Rápida)": threshold = 85
+    elif estrat == "Sniper (Robusta)": threshold = 98
+    else: threshold = 92
 
     now = datetime.now()
     prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0) if tf == "M1" else \
@@ -117,7 +126,6 @@ else:
     np.random.seed(int(prox.timestamp()))
     f = np.random.randint(0, 100)
     
-    # Aplicação do Filtro
     if f >= threshold: sinal, cor = "PUT (VENDA) 🔴", "#ff5252"
     elif f <= (100 - threshold): sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
     else: sinal, cor = "ANALISANDO... 🔎", "#94a3b8"
