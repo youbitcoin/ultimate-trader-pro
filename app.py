@@ -14,7 +14,7 @@ SEU_WHATSAPP = "5521998203486"
 # Extração do ID
 match = re.search(r"/d/([\w-]+)", LINK_PLANILHA)
 SHEET_ID = match.group(1) if match else ""
-SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
 
 st.set_page_config(page_title="Ultimate Trader Pro", layout="wide")
 
