@@ -13,7 +13,8 @@ SHEET_ID = "1Tb_HBNki4oo5bMqPu6WyKz5RpgUrO4bFCwsWVm-fSLQ-yRwH3P8Qe211BHw18RToRiH
 SEU_WHATSAPP = "5521998203486" 
 
 # Link de exportação direta para o sistema ler os dados
-SHEET_URL = SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
+SHEET_URL = SHEET_URL = # Versão corrigida que busca a aba específica "dados"
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=dados"
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="Ultimate Trader Pro", layout="wide", page_icon="📈")
 
