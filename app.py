@@ -38,12 +38,21 @@ if 'stats' not in st.session_state:
 # --- FUNÇÃO DE VERIFICAÇÃO DE ACESSO ---
 def verificar_acesso():
     try:
-        # Lê a planilha do Google via link CSV
-        df = pd.read_csv(SHEET_URL)
-        # Converte a coluna expiracao para data
-        df['expiracao'] = pd.to_datetime(df['expiracao']).dt.date
+        # Link alternativo mais estável para Google Sheets públicos
+        csv_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
+        df = pd.read_csv(csv_url)
+        
+        # Limpa espaços em branco que podem vir do Google Sheets
+        df.columns = df.columns.str.strip().str.lower()
+        
+        # Converte a coluna expiracao
+        if 'expiracao' in df.columns:
+            df['expiracao'] = pd.to_datetime(df['expiracao']).dt.date
+            
         return df
     except Exception as e:
+        # Isso vai mostrar o erro real na tela do Streamlit se algo falhar
+        st.sidebar.error(f"Erro técnico: {e}")
         return pd.DataFrame()
 
 # --- GERADOR DE SINAIS (LÓGICA TÉCNICA) ---
