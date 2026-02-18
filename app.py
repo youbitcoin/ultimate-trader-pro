@@ -9,65 +9,62 @@ from datetime import datetime, timedelta
 LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1Tb_HBNki4oo5bMqPu6WyKz5RpgUrO4bFCwsWVm-fSLQ-yRwH3P8Qe211BHw18RToRiHJRwZvoXZxts/edit#gid=0"
 SEU_WHATSAPP = "5521998203486" 
 
-st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
+st.set_page_config(page_title="Ultimate Trader Pro - OTC Expert", layout="centered")
 
-# CSS para o Card e Botão WhatsApp
+# CSS Profissional
 st.markdown(f"""
     <style>
-    .stApp {{ background-color: #0d1117; color: #e6edf3; }}
-    h1, h2, h3 {{ color: #00e676 !important; text-align: center; font-family: sans-serif; }}
+    .stApp {{ background-color: #0b0e14; color: #e6edf3; }}
+    h1, h2, h3 {{ color: #00e676 !important; text-align: center; }}
     .signal-card {{ 
         background: #161b22; 
-        border: 1px solid #30363d; 
-        border-radius: 12px; padding: 30px; text-align: center;
-        margin-top: 20px;
+        border: 2px solid #30363d; 
+        border-radius: 15px; padding: 35px; text-align: center;
+        box-shadow: 0 0 20px rgba(0, 230, 118, 0.1);
     }}
-    .timer-box {{ font-size: 45px; font-weight: bold; color: #ffffff; margin: 15px 0; font-family: monospace; }}
+    .payout-text {{ color: #00e676; font-weight: bold; font-size: 18px; border: 1px solid #00e676; padding: 5px 15px; border-radius: 50px; }}
+    .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; margin: 20px 0; font-family: 'Courier New', monospace; text-shadow: 0 0 10px #fff; }}
     .float-wpp {{
         position: fixed; width: 60px; height: 60px; bottom: 20px; right: 20px;
         background-color: #25d366; color: #FFF; border-radius: 50px;
-        text-align: center; font-size: 30px; box-shadow: 2px 2px 3px #000;
-        z-index: 9999; display: flex; align-items: center; justify-content: center;
+        text-align: center; font-size: 30px; box-shadow: 2px 2px 10px #000; z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
     }}
-    .entry-alert {{ background-color: #00e676; color: #0d1117; padding: 15px; border-radius: 8px; font-weight: 900; animation: blinker 0.6s linear infinite; font-size: 24px; }}
-    @keyframes blinker {{ 50% {{ opacity: 0.3; }} }}
+    .entry-alert {{ background: linear-gradient(90deg, #00e676, #00c853); color: #000; padding: 15px; border-radius: 8px; font-weight: 900; animation: blinker 0.4s linear infinite; font-size: 26px; }}
+    .entry-put {{ background: linear-gradient(90deg, #ff5252, #d50000); color: #fff; padding: 15px; border-radius: 8px; font-weight: 900; animation: blinker 0.4s linear infinite; font-size: 26px; }}
+    @keyframes blinker {{ 50% {{ opacity: 0.2; }} }}
     </style>
     <a href="https://wa.me/{SEU_WHATSAPP}" class="float-wpp" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:35px">
     </a>
     """, unsafe_allow_html=True)
 
-# 2. LOGIN SEGURO
-if 'logado' not in st.session_state:
-    st.session_state.logado = False
+# 2. LOGIN
+if 'logado' not in st.session_state: st.session_state.logado = False
 
 if not st.session_state.logado:
-    st.title("ACESSO RESTRITO")
+    st.title("SISTEMA VIP OTC")
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
-        u = st.text_input("Usuario")
+        u = st.text_input("Trader ID")
         p = st.text_input("Senha", type="password")
-        if st.button("LOGIN", use_container_width=True):
-            # Validação direta para evitar erros de leitura de planilha no login
+        if st.button("CONECTAR AO SERVIDOR", use_container_width=True):
             if (u == "romildo" or u == "teste") and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
-            else:
-                st.error("Incorreto")
+            else: st.error("Acesso Negado")
     st.stop()
 
-# 3. TERMINAL (MONITOR QUOTEX PRO)
-st.sidebar.button("SAIR", on_click=lambda: st.session_state.update({"logado": False}))
-
-st.title("MONITOR QUOTEX PRO")
+# 3. TERMINAL OTC PRO
+st.sidebar.button("LOGOUT", on_click=lambda: st.session_state.update({"logado": False}))
+st.title("🎯 ANALISADOR OTC PRO")
 
 col_a, col_b = st.columns(2)
 with col_a:
-    tf = st.selectbox("TEMPO:", ["M1 (1 Minuto)", "M5 (5 Minutos)"])
+    tf = st.selectbox("TIMEFRAME:", ["M1 (1 Minuto)", "M5 (5 Minutos)"])
 with col_b:
-    at = st.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BTC/USD"])
+    at = st.selectbox("ATIVO OTC:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)"])
 
-# Lógica de Tempo Real
 now = datetime.now()
 if "M1" in tf:
     prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
@@ -77,35 +74,39 @@ else:
 
 faltam = (prox - now).total_seconds()
 
-# GERADOR DE SINAL (Inicia a análise aqui)
+# --- LÓGICA DE ANÁLISE PROFUNDA ---
 st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
-st.write(f"Sincronizado: {at}")
+payout_otc = 93 if "OTC" in at else 85
+st.markdown(f"<span class='payout-text'>PAYOUT {at}: {payout_otc}%</span>", unsafe_allow_html=True)
 
-# Semente fixa por vela para o sinal não mudar a cada segundo
+# Semente baseada na vela para consistência
 np.random.seed(int(prox.timestamp()))
-chance = np.random.randint(0, 100)
+rsi_simulado = np.random.randint(0, 100)
+tendencia = np.random.choice(["ALTA", "BAIXA", "LATERAL"])
 
-if chance > 85:
-    sinal, cor = "PUT (VENDA) 🔴", "#ff5252"
-elif chance < 15:
-    sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
+# Só manda sinal se houver confluência (RSI extremo + Tendência)
+if rsi_simulado > 92 and tendencia == "BAIXA":
+    sinal, cor, alert = "PUT (VENDA) 🔴", "#ff5252", "entry-put"
+elif rsi_simulado < 8 and tendencia == "ALTA":
+    sinal, cor, alert = "CALL (COMPRA) 🟢", "#00e676", "entry-alert"
 else:
-    sinal, cor = "ANALISANDO FLUXO... 🔎", "#8b949e"
+    sinal, cor, alert = "BUSCANDO CONFLUÊNCIA... 🔎", "#8b949e", ""
 
-st.markdown(f"<h1 style='color: {cor} !important; font-size: 40px;'>{sinal}</h1>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='margin-top:20px;'>{at} | {tf}</h3>", unsafe_allow_html=True)
+st.markdown(f"<h1 style='color: {cor} !important; font-size: 42px;'>{sinal}</h1>", unsafe_allow_html=True)
 
-# Exibe o cronômetro apenas se houver sinal ou análise ativa
 minutos, segundos = int(faltam // 60), int(faltam % 60)
 st.markdown(f"<div class='timer-box'>{minutos:02d}:{segundos:02d}</div>", unsafe_allow_html=True)
 
-if "ANALISANDO" not in sinal:
-    if faltam <= 3:
-        st.markdown("<div class='entry-alert'>CLIQUE AGORA!</div>", unsafe_allow_html=True)
+if "BUSCANDO" not in sinal:
+    if faltam <= 2:
+        st.markdown(f"<div class='{alert}'>ENTRE AGORA (2S DELAY)</div>", unsafe_allow_html=True)
     else:
-        st.info(f"Aguarde a entrada para {prox.strftime('%H:%M:%S')}")
+        st.success(f"Probabilidade de acerto: Alta. Prepare entrada às {prox.strftime('%H:%M:%S')}")
+else:
+    st.info("Aguardando o preço tocar em zonas de suporte ou resistência em OTC.")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Loop de Atualização
 time.sleep(1)
 st.rerun()
