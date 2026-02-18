@@ -61,7 +61,7 @@ if 'som_tocado' not in st.session_state: st.session_state.som_tocado = False
 
 # LOGIN
 if not st.session_state.logado:
-    st.title("SISTEMA VIP OTC")
+    st.title("Ultimate Trader Pro v1.0")
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
         u = st.text_input("Trader ID")
@@ -104,7 +104,7 @@ if st.session_state.aguardando_resultado:
             st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
-    st.title("🎯 MONITOR QUOTEX PRO")
+    st.title("🎯 Ultimate Trader Pro")
     c1, c2 = st.columns(2)
     with c1: tf = st.selectbox("TEMPO:", ["M1", "M5"])
     with c2: at = st.selectbox("ATIVO OTC:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BTC/USD"])
