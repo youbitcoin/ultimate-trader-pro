@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 SEU_WHATSAPP = "5521998203486"
 st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
-# 2. ESTILO CSS
+# 2. ESTILO CSS (VISUAL PREMIUM)
 st.markdown(f"""
 <style>
     .block-container {{ padding-top: 3rem !important; }}
@@ -33,9 +33,6 @@ st.markdown(f"""
     }}
 
     .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; font-family: monospace; }}
-    
-    /* Ajuste para o seletor de ativos aparecer melhor */
-    .stSelectbox label {{ color: #94a3b8 !important; font-weight: bold; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -53,7 +50,7 @@ if not st.session_state.logado:
     with col_l2:
         u = st.text_input("Usuário / ID")
         p = st.text_input("Senha", type="password")
-        if st.button("Acessar", use_container_width=True):
+        if st.button("DESBLOQUEAR TERMINAL", use_container_width=True):
             if (u == "romildo" or u == "teste") and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
@@ -76,7 +73,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 6. LÓGICA DE SINAIS E SELEÇÃO DE ATIVOS
+# 6. CONFIGURAÇÃO DE ESTRATÉGIA
 if st.session_state.aguardando:
     st.markdown("<div class='signal-card'><h3>RESULTADO DO SINAL?</h3>", unsafe_allow_html=True)
     c_w, c_l, c_p = st.columns(3)
@@ -96,18 +93,21 @@ if st.session_state.aguardando:
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
-    c1, c2 = st.columns([1, 2]) # Coluna do Ativo maior para ler tudo
+    # Seletores de Operação
+    c1, c2, c3 = st.columns([1, 1, 1])
     tf = c1.selectbox("TEMPO:", ["M1", "M5"])
+    estrat = c2.selectbox("ESTRATÉGIA:", ["Turbo (Rápida)", "Moderada", "Sniper (Robusta)"])
     
-    # LISTA COMPLETA DE ATIVOS
-    lista_ativos = [
-        "EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", 
-        "EUR/GBP (OTC)", "USD/CHF (OTC)", "AUD/USD (OTC)", "NZD/USD (OTC)",
-        "EUR/JPY (OTC)", "GBP/JPY (OTC)", "CAD/JPY (OTC)", "USD/CAD (OTC)",
-        "EUR/CAD (OTC)", "GBP/AUD (OTC)", "AUD/JPY (OTC)", "BITCOIN (BTC)",
-        "ETHEREUM (ETH)", "SOLANA (SOL)", "LITECOIN (LTC)", "RIPPLE (XRP)"
-    ]
-    at = c2.selectbox("ATIVO DISPONÍVEL:", lista_ativos)
+    lista_ativos = ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "EUR/GBP (OTC)", "BITCOIN (BTC)", "ETHEREUM (ETH)"]
+    at = c3.selectbox("ATIVO:", lista_ativos)
+
+    # Lógica de Probabilidade baseada no nível escolhido
+    if estrat == "Turbo (Rápida)":
+        threshold = 85  # Mais sinais (15% de chance de CALL ou PUT)
+    elif estrat == "Sniper (Robusta)":
+        threshold = 98  # Pouquíssimos sinais (2% de chance)
+    else:
+        threshold = 92  # Padrão (8% de chance)
 
     now = datetime.now()
     prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0) if tf == "M1" else \
@@ -117,8 +117,9 @@ else:
     np.random.seed(int(prox.timestamp()))
     f = np.random.randint(0, 100)
     
-    if f > 91: sinal, cor = "PUT (VENDA) 🔴", "#ff5252"
-    elif f < 9: sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
+    # Aplicação do Filtro
+    if f >= threshold: sinal, cor = "PUT (VENDA) 🔴", "#ff5252"
+    elif f <= (100 - threshold): sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
     else: sinal, cor = "ANALISANDO... 🔎", "#94a3b8"
 
     if "ANALISANDO" not in sinal and not st.session_state.som:
@@ -127,7 +128,7 @@ else:
 
     st.markdown(f"""
     <div class='signal-card'>
-        <h2 style="color:#fff !important; font-size:20px;">{at}</h2>
+        <h2 style="color:#fff !important; font-size:18px; margin-bottom:0;">{at} | {estrat}</h2>
         <h1 style='color:{cor} !important; font-size:38px; margin:5px 0;'>{sinal}</h1>
         <div class='timer-box'>{int(faltam // 60):02d}:{int(faltam % 60):02d}</div>
     </div>
