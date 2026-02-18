@@ -112,4 +112,29 @@ else:
 
     faltam = (prox - now).total_seconds()
 
-    st.markdown("<div
+    st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
+    st.markdown(f"<span style='color:#00e676; font-weight:bold;'>PAYOUT: {payout}%</span>", unsafe_allow_html=True)
+    
+    np.random.seed(int(prox.timestamp()))
+    analise = np.random.randint(0, 100)
+    
+    if analise > 85:
+        sinal, cor, alert_class = "PUT (VENDA) 🔴", "#ff5252", "entry-put"
+    elif analise < 15:
+        sinal, cor, alert_class = "CALL (COMPRA) 🟢", "#00e676", "entry-now"
+    else:
+        sinal, cor, alert_class = "ANALISANDO... 🔎", "#8b949e", ""
+
+    st.markdown(f"<h3>{par}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='color: {cor} !important; font-size: 38px;'>{sinal}</h1>", unsafe_allow_html=True)
+
+    if "ANALISANDO" not in sinal:
+        st.markdown(f"<div class='timer-box'>{int(faltam // 60):02d}:{int(faltam % 60):02d}</div>", unsafe_allow_html=True)
+        if 2 < faltam <= 10:
+            st.warning("PREPARE A ENTRADA")
+        elif faltam <= 2:
+            st.markdown(f"<div class='{alert_class}'>CLIQUE AGORA!</div>", unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+st.rerun()
+    time.sleep(1)
