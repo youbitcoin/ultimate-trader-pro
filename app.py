@@ -11,7 +11,6 @@ st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
 # Função para tocar o som (Melhorada)
 def play_notification():
-    # Som de notificação tipo 'Ding'
     sound_url = "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
     st.markdown(f"""
         <iframe src="{sound_url}" allow="autoplay" style="display:none" id="iframeAudio"></iframe>
@@ -22,10 +21,11 @@ def play_notification():
 st.markdown(f"""
     <style>
     .stApp {{ background-color: #0b0e14; color: #e6edf3; }}
-    h1, h2, h3 {{ color: #00e676 !important; text-align: center; }}
+    h1 {{ color: #00e676 !important; text-align: center; margin-top: -50px; padding-bottom: 20px; }}
+    h3 {{ color: #00e676 !important; text-align: center; }}
     .dash-container {{
         background: #161b22; border-radius: 10px; padding: 15px;
-        margin-bottom: 20px; border: 1px solid #30363d;
+        margin-bottom: 30px; border: 1px solid #30363d;
         display: flex; justify-content: space-around; align-items: center;
     }}
     .dash-value {{ font-size: 24px; font-weight: bold; color: #fff; }}
@@ -66,7 +66,7 @@ if not st.session_state.logado:
                 st.rerun()
     st.stop()
 
-# 3. DASHBOARD
+# 3. DASHBOARD (NO TOPO)
 total_ops = st.session_state.historico_win + st.session_state.historico_loss
 winrate = (st.session_state.historico_win / total_ops * 100) if total_ops > 0 else 0
 
@@ -79,7 +79,10 @@ st.markdown(f"""
     </div>
     """, unsafe_allow_html=True)
 
-# 4. CONTROLE DE SINAL / FEEDBACK
+# 4. TÍTULO DO MONITOR (AGORA NO TOPO DO TERMINAL)
+st.markdown("<h1>🎯 MONITOR QUOTEX PRO</h1>", unsafe_allow_html=True)
+
+# 5. CONTROLE DE SINAL / FEEDBACK
 if st.session_state.aguardando_resultado:
     st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
     st.subheader("O QUE ACONTECEU NO SINAL?")
@@ -105,7 +108,6 @@ if st.session_state.aguardando_resultado:
             st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
-    st.title("🎯 MONITOR QUOTEX PRO")
     c1, c2 = st.columns(2)
     with c1: tf = st.selectbox("TEMPO:", ["M1", "M5"])
     with c2: at = st.selectbox("ATIVO OTC:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BTC/USD"])
@@ -124,7 +126,7 @@ else:
     elif f < 8: sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
     else: sinal, cor = "ANALISANDO... 🔎", "#8b949e"
 
-    # --- TOCA O SOM ---
+    # TOCA O SOM
     if "ANALISANDO" not in sinal and not st.session_state.som_tocado:
         play_notification()
         st.session_state.som_tocado = True
