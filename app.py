@@ -147,4 +147,17 @@ else:
     st.markdown(f"<h1 style='color: {cor} !important; font-size: 40px;'>{sinal}</h1>", unsafe_allow_html=True)
 
     minutos, segundos = int(faltam // 60), int(faltam % 60)
-    st.markdown(f
+    st.markdown(f"<div class='timer-box'>{minutos:02d}:{segundos:02d}</div>", unsafe_allow_html=True)
+
+    if "ANALISANDO" not in sinal:
+        if faltam <= 2:
+            st.session_state.ultimo_sinal = {"ativo": at, "direcao": sinal}
+            st.session_state.aguardando_resultado = True
+            time.sleep(1)
+            st.rerun()
+        else:
+            st.info("Sinal identificado. Aguarde a finalização do cronómetro.")
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    time.sleep(1)
+    st.rerun()
