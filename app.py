@@ -2,11 +2,22 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import time
+import base64
 from datetime import datetime, timedelta
 
 # 1. CONFIGURAÇÕES BÁSICAS
 SEU_WHATSAPP = "5521998203486"
 st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
+
+# Função para carregar som local ou URL e transformar em HTML funcional
+def play_sound():
+    sound_url = "https://www.soundjay.com/buttons/sounds/button-3.mp3"
+    sound_html = f"""
+        <audio autoplay>
+            <source src="{sound_url}" type="audio/mp3">
+        </audio>
+    """
+    st.markdown(sound_html, unsafe_allow_html=True)
 
 # 2. ESTILO CSS
 st.markdown(f"""
@@ -33,9 +44,6 @@ st.markdown(f"""
     }}
 
     .timer-box {{ font-size: 50px; font-weight: bold; color: #ffffff; font-family: monospace; }}
-    
-    /* Cores especiais para botoes de gale */
-    .stButton>button {{ border-radius: 10px; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -44,7 +52,7 @@ if 'logado' not in st.session_state: st.session_state.logado = False
 if 'aguardando' not in st.session_state: st.session_state.aguardando = False
 if 'win' not in st.session_state: st.session_state.win = 0
 if 'loss' not in st.session_state: st.session_state.loss = 0
-if 'som' not in st.session_state: st.session_state.som = False
+if 'som_tocado' not in st.session_state: st.session_state.som_tocado = False
 
 # 4. TELA DE LOGIN
 if not st.session_state.logado:
@@ -76,43 +84,36 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 6. LÓGICA DE SINAIS E RESULTADO
+# 6. LÓGICA DE SINAIS
 if st.session_state.aguardando:
     st.markdown("<div class='signal-card'><h3>RESULTADO DA OPERAÇÃO</h3>", unsafe_allow_html=True)
-    c_w, c_l, c_g, c_p = st.columns(4) # Quatro colunas agora
+    c_w, c_l, c_g, c_p = st.columns(4)
     
     if c_w.button("✅ WIN", use_container_width=True):
         st.session_state.win += 1
         st.session_state.aguardando = False
-        st.session_state.som = False
+        st.session_state.som_tocado = False
         st.rerun()
-        
     if c_l.button("❌ LOSS", use_container_width=True):
         st.session_state.loss += 1
         st.session_state.aguardando = False
-        st.session_state.som = False
+        st.session_state.som_tocado = False
         st.rerun()
-
-    if c_g.button("🔄 GALE", use_container_width=True, help="Entrada dobrada no próximo minuto"):
-        # No Gale, apenas resetamos o som para tocar de novo se o sinal persistir
-        # E mantemos o estado de aguardando
-        st.session_state.som = False
-        st.toast("🔥 Aguardando Gale...", icon="⚠️")
-        time.sleep(0.5)
+    if c_g.button("🔄 GALE", use_container_width=True):
+        st.session_state.som_tocado = False
+        st.toast("⚠️ Gale detetado! Aguardando novo sinal...", icon="🔥")
+        time.sleep(1)
         st.rerun()
-
     if c_p.button("⚪ PULAR", use_container_width=True):
         st.session_state.aguardando = False
-        st.session_state.som = False
+        st.session_state.som_tocado = False
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
-    c1, c2, c3 = st.columns([1, 1, 1])
-    tf = c1.selectbox("TEMPO:", ["M1", "M5"])
-    estrat = c2.selectbox("ESTRATÉGIA:", ["Turbo (Rápida)", "Moderada", "Sniper (Robusta)"])
-    
-    lista_ativos = ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "EUR/GBP (OTC)", "BITCOIN (BTC)", "ETHEREUM (ETH)"]
-    at = c3.selectbox("ATIVO:", lista_ativos)
+    col_menu1, col_menu2, col_menu3 = st.columns([1, 1, 1])
+    tf = col_menu1.selectbox("TEMPO:", ["M1", "M5"])
+    estrat = col_menu2.selectbox("ESTRATÉGIA:", ["Turbo (Rápida)", "Moderada", "Sniper (Robusta)"])
+    at = col_menu3.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BITCOIN (BTC)"])
 
     if estrat == "Turbo (Rápida)": threshold = 85
     elif estrat == "Sniper (Robusta)": threshold = 98
@@ -130,9 +131,11 @@ else:
     elif f <= (100 - threshold): sinal, cor = "CALL (COMPRA) 🟢", "#00e676"
     else: sinal, cor = "ANALISANDO... 🔎", "#94a3b8"
 
-    if "ANALISANDO" not in sinal and not st.session_state.som:
-        st.markdown('<iframe src="https://www.soundjay.com/buttons/sounds/button-3.mp3" allow="autoplay" style="display:none"></iframe>', unsafe_allow_html=True)
-        st.session_state.som = True
+    # --- LÓGICA DE SOM CORRIGIDA ---
+    if "ANALISANDO" not in sinal and not st.session_state.som_tocado:
+        play_sound()
+        st.session_state.som_tocado = True
+    # -------------------------------
 
     st.markdown(f"""
     <div class='signal-card'>
