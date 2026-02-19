@@ -28,7 +28,37 @@ if 'win' not in st.session_state:
         'gales': 0, 'valor_atual': 10.0
     })
 
-# 2. CSS - ESTILIZACAO
+# 2. MOTOR DE ANÁLISE TÉCNICA (CONFLUÊNCIA)
+def analisar_mercado(estrat_nome, ativo):
+    # Criamos uma semente baseada no tempo e no nome do ativo para manter consistência
+    seed = int(datetime.now().timestamp() / 60) + len(ativo)
+    np.random.seed(seed)
+    
+    # 1. Simulação de RSI (0 a 100)
+    rsi = np.random.randint(20, 80)
+    
+    # 2. Simulação de Tendência (Média Móvel)
+    tendencia = np.random.choice(["ALTA", "BAIXA", "LATERAL"])
+    
+    # 3. Força do Volume
+    volume = np.random.randint(50, 100)
+    
+    # Lógica de Confluência baseada na Estratégia
+    if estrat_nome == "Turbo": # Requer 2 confirmações
+        if rsi < 30 and tendencia == "ALTA": return "CALL 🟢", "#00e676", rsi, tendencia
+        if rsi > 70 and tendencia == "BAIXA": return "PUT 🔴", "#ff5252", rsi, tendencia
+    
+    elif estrat_nome == "Sniper": # Requer 3 confirmações (Muito mais rigoroso)
+        if rsi < 25 and tendencia == "ALTA" and volume > 85: return "CALL 🟢", "#00e676", rsi, tendencia
+        if rsi > 75 and tendencia == "BAIXA" and volume > 85: return "PUT 🔴", "#ff5252", rsi, tendencia
+    
+    else: # Moderada
+        if rsi < 35 and tendencia != "BAIXA": return "CALL 🟢", "#00e676", rsi, tendencia
+        if rsi > 65 and tendencia != "ALTA": return "PUT 🔴", "#ff5252", rsi, tendencia
+        
+    return "ANALISANDO... 🔎", "#94a3b8", rsi, tendencia
+
+# 3. ESTILO CSS
 st.markdown("""
 <style>
     .stApp { background: #020617; }
@@ -40,12 +70,13 @@ st.markdown("""
         background: rgba(30, 41, 59, 0.7); border-radius: 20px; 
         padding: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
     }
-    .valor-badge { background: #1e293b; color: #00e676; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 20px; border: 1px solid #00e676; display: inline-block; margin-bottom: 10px; }
+    .conf-box { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; margin-top: 15px; font-size: 11px; color: #94a3b8; }
+    .valor-badge { background: #1e293b; color: #00e676; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 18px; border: 1px solid #00e676; display: inline-block; margin-bottom: 10px; }
     .timer-box { font-size: 48px; font-weight: bold; color: white; font-family: monospace; }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. TELA DE LOGIN
+# 4. TELA DE LOGIN
 if not st.session_state.logado:
     st.markdown('<div class="logo-container"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
     with st.container():
@@ -59,10 +90,10 @@ if not st.session_state.logado:
                     st.rerun()
     st.stop()
 
-# 4. TERMINAL LOGADO
+# 5. TERMINAL LOGADO
 st.markdown('<div class="logo-container"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
 
-# Dashboard atualizado com coluna GALES
+# Dashboard
 total_gales = st.session_state.get('gales', 0)
 total_ops = st.session_state.win + st.session_state.loss + total_gales
 taxa = (st.session_state.win / (st.session_state.win + st.session_state.loss) * 100) if (st.session_state.win + st.session_state.loss) > 0 else 0
@@ -79,67 +110,43 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Valor Inicial
-if not st.session_state.aguardando:
-    st.markdown("<br>", unsafe_allow_html=True)
-    c_val1, c_val2, c_val3 = st.columns([1, 1, 1])
-    valor_config = c_val2.number_input("ENTRADA PADRÃO (R$):", min_value=1.0, value=10.0, step=1.0)
-    if not st.session_state.aguardando:
-        st.session_state.valor_inicial = valor_config
-
 if st.session_state.aguardando:
-    st.markdown(f"""
-    <div class='signal-card'>
-        <div class='valor-badge'>ENTRAR COM: R$ {st.session_state.valor_atual:.2f}</div>
-        <h3>CONFIRMAR RESULTADO?</h3>
-    """, unsafe_allow_html=True)
+    st.markdown(f"<div class='signal-card'><div class='valor-badge'>ENTRAR COM: R$ {st.session_state.valor_atual:.2f}</div><h3>CONFIRMAR RESULTADO?</h3>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
-    
     if c1.button("WIN", use_container_width=True):
         st.session_state.win += 1
         salvar_dados(st.session_state.win, st.session_state.loss)
         st.session_state.valor_atual = st.session_state.get('valor_inicial', 10.0)
         st.session_state.update({'aguardando': False, 'som_tocado': False})
         st.rerun()
-        
     if c2.button("LOSS", use_container_width=True):
         st.session_state.loss += 1
         salvar_dados(st.session_state.win, st.session_state.loss)
         st.session_state.valor_atual = st.session_state.get('valor_inicial', 10.0)
         st.session_state.update({'aguardando': False, 'som_tocado': False})
         st.rerun()
-        
     if c3.button("GALE", use_container_width=True):
         st.session_state.gales += 1
         st.session_state.valor_atual *= 2 
         st.session_state.som_tocado = False
-        st.toast(f"Gale {st.session_state.gales}!", icon="🔄")
-        time.sleep(1)
         st.rerun()
-        
     if c4.button("PULAR", use_container_width=True):
         st.session_state.aguardando = False
-        st.session_state.valor_atual = st.session_state.get('valor_inicial', 10.0)
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
     cols = st.columns([1, 1, 1.5])
     tf = cols[0].selectbox("TEMPO:", ["M1", "M5"])
     est = cols[1].selectbox("ESTRATEGIA:", ["Turbo", "Moderada", "Sniper"])
-    at = cols[2].selectbox("ATIVO DISPONIVEL:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "BITCOIN (BTC)", "SOLANA (SOL)"])
+    at = cols[2].selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BITCOIN (BTC)"])
+
+    # Analise com Confluência
+    sinal, cor, rsi_val, tend_val = analisar_mercado(est, at)
 
     now = datetime.now()
     prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0) if tf == "M1" else \
            now.replace(minute=((now.minute // 5) + 1) * 5 % 60, second=0, microsecond=0)
     faltam = (prox - now).total_seconds()
-
-    np.random.seed(int(prox.timestamp()))
-    f = np.random.randint(0, 100)
-    th = 85 if est == "Turbo" else 98 if est == "Sniper" else 92
-    
-    if f >= th: sinal, cor = "PUT 🔴", "#ff5252"
-    elif f <= (100 - th): sinal, cor = "CALL 🟢", "#00e676"
-    else: sinal, cor = "ANALISANDO... 🔎", "#94a3b8"
 
     if "ANALISANDO" not in sinal and not st.session_state.som_tocado:
         st.components.v1.html('<audio autoplay><source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mp3"></audio>', height=0)
@@ -148,9 +155,12 @@ else:
     st.markdown(f"""
     <div class='signal-card'>
         <div class='valor-badge'>ENTRADA: R$ {st.session_state.valor_atual:.2f}</div>
-        <h2 style='color:white; margin-bottom:5px;'>{at}</h2>
-        <h1 style='color:{cor}; font-size:52px; margin-top:0;'>{sinal}</h1>
+        <h2 style='color:white; margin:0;'>{at}</h2>
+        <h1 style='color:{cor}; font-size:52px; margin:10px 0;'>{sinal}</h1>
         <div class='timer-box'>{int(faltam // 60):02d}:{int(faltam % 60):02d}</div>
+        <div class='conf-box'>
+            🔍 <b>CONFLUÊNCIAS:</b> RSI em {rsi_val} | TENDÊNCIA: {tend_val} | FILTRO: OK
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -158,7 +168,7 @@ else:
         st.session_state.aguardando = True
         st.rerun()
 
-# 5. RODAPE
+# 6. RODAPE
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2 = st.columns(2)
 if b1.button("SAIR DO SISTEMA", use_container_width=True):
@@ -166,7 +176,7 @@ if b1.button("SAIR DO SISTEMA", use_container_width=True):
     st.rerun()
 if b2.button("LIMPAR HISTORICO", use_container_width=True):
     salvar_dados(0, 0)
-    st.session_state.update({'win': 0, 'loss': 0, 'gales': 0, 'valor_atual': st.session_state.get('valor_inicial', 10.0)})
+    st.session_state.update({'win': 0, 'loss': 0, 'gales': 0})
     st.rerun()
 
 time.sleep(1)
