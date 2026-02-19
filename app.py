@@ -13,133 +13,143 @@ if 'logado' not in st.session_state:
         'aguardando': False, 'banca': 1000.0, 'valor_inicial': 10.0, 'payout': 87
     })
 
-# 2. FUNDOS DE ALTA PERFORMANCE
-# Login: Cidade Futurista / Dashboard: Digital Grid Hi-Tech
-img_login = "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=1974&auto=format&fit=crop"
-img_dash = "https://images.unsplash.com/photo-1510511459019-5dee224ffb8b?q=80&w=2070&auto=format&fit=crop"
+# 2. FUNDOS CYBERPINK VIBRANTES
+img_login = "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop" # Roxo & Azul Hi-tech
+img_dash = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop" # Abstrato Cyber Dark
 
 bg_url = img_login if not st.session_state.logado else img_dash
 
-# 3. CSS CUSTOMIZADO (LOGO BLINDADA + GRID FUTURISTA)
+# 3. CSS CUSTOMIZADO (PALETA ROXO + AZUL)
 st.markdown(f"""
 <style>
-    /* FUNDO COM OVERLAY PARA LEITURA */
     .stApp {{
-        background: linear-gradient(rgba(0, 8, 20, 0.85), rgba(0, 8, 20, 0.85)), url("{bg_url}");
+        background: linear-gradient(rgba(10, 0, 20, 0.85), rgba(0, 5, 20, 0.85)), url("{bg_url}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
     }}
     
-    /* LOGO OFICIAL - FORMATO TRAVADO */
+    /* LOGO OFICIAL */
     .logo-box {{
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 20px 0;
-        filter: drop-shadow(0 0 10px rgba(0, 230, 118, 0.3));
     }}
-    .u-text {{ color: #FFFFFF; font-size: 40px; font-family: 'Arial Black', sans-serif; font-weight: 900; letter-spacing: -1px; }}
-    .t-text {{ color: #00e676; font-size: 40px; font-family: 'Arial Black', sans-serif; font-weight: 900; letter-spacing: -1px; margin-left: 4px; }}
+    .u-text {{ color: #FFFFFF; font-size: 40px; font-family: 'Arial Black', sans-serif; font-weight: 900; }}
+    .t-text {{ color: #00e676; font-size: 40px; font-family: 'Arial Black', sans-serif; font-weight: 900; text-shadow: 0 0 15px #00e676; margin-left: 5px; }}
     .p-badge {{ 
-        background: #00e676; color: #000; padding: 2px 10px; border-radius: 6px; 
-        font-size: 18px; margin-left: 10px; font-family: sans-serif; font-weight: bold;
+        background: #bf5af2; color: #fff; padding: 2px 10px; border-radius: 6px; 
+        font-size: 18px; margin-left: 10px; font-weight: bold; box-shadow: 0 0 10px #bf5af2;
     }}
     
-    /* SALDO CENTRALIZADO HI-TECH */
+    /* SALDO CENTRALIZADO (ROXO + AZUL) */
     .banca-wrapper {{ display: flex; justify-content: center; margin: 20px 0; }}
     .banca-box {{ 
-        background: rgba(0, 230, 118, 0.1); 
-        color: #00e676; 
+        background: rgba(191, 90, 242, 0.1); 
+        color: #00d2ff; 
         padding: 15px 60px; 
         border-radius: 4px; 
         font-size: 28px; 
         font-weight: bold; 
-        border-left: 5px solid #00e676;
-        border-right: 5px solid #00e676;
-        box-shadow: 0 0 30px rgba(0,230,118,0.2);
+        border-left: 5px solid #bf5af2;
+        border-right: 5px solid #00d2ff;
+        box-shadow: 0 0 30px rgba(191, 90, 242, 0.2);
     }}
     
-    /* CARDS DE SINAIS */
+    /* CARDS E INPUTS */
     .signal-card {{ 
-        background: rgba(13, 17, 23, 0.95); 
+        background: rgba(15, 0, 30, 0.9); 
         border-radius: 15px; 
         padding: 30px; 
         text-align: center; 
-        border: 1px solid rgba(0,230,118,0.4);
-        box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        border: 1px solid #bf5af2;
+        box-shadow: 0 0 40px rgba(191, 90, 242, 0.1);
     }}
     
-    .timer {{ font-size: 55px; font-weight: bold; color: #fff; font-family: 'Courier New', monospace; }}
+    .stNumberInput input, .stSelectbox div[data-baseweb="select"] {{
+        background-color: #0a0014 !important;
+        color: #00d2ff !important;
+        border: 1px solid #bf5af2 !important;
+    }}
+
+    .timer {{ font-size: 55px; font-weight: bold; color: #fff; font-family: 'Courier New', monospace; text-shadow: 0 0 10px #bf5af2; }}
     
-    /* AJUSTE INPUTS */
-    .stNumberInput input {{ background-color: #0d1117 !important; color: #00e676 !important; border: 1px solid #00e676 !important; }}
+    /* BOTÕES */
+    .stButton>button {{
+        background: linear-gradient(45deg, #bf5af2, #5e5ce6);
+        color: white;
+        border: none;
+        transition: 0.3s;
+    }}
+    .stButton>button:hover {{
+        box-shadow: 0 0 20px #bf5af2;
+        transform: scale(1.02);
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-# 4. SISTEMA DE ACESSO
+# 4. LOGIN
 if not st.session_state.logado:
     st.markdown('<div class="logo-box"><span class="u-text">ULTIMATE</span><span class="t-text">TRADER</span><span class="p-badge">PRO</span></div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
-        st.markdown("<div style='text-align:center; color:#64748b; margin-bottom:10px;'>CYBERNETIC INTERFACE V2.0</div>", unsafe_allow_html=True)
-        u = st.text_input("ID DE ACESSO")
-        p = st.text_input("CHAVE CRIPTOGRÁFICA", type="password")
-        if st.button("AUTENTICAR NO TERMINAL", use_container_width=True):
+        st.markdown("<div style='text-align:center; color:#bf5af2; margin-bottom:10px;'>CYBERNETIC ACCESS PORTAL</div>", unsafe_allow_html=True)
+        u = st.text_input("USER ID")
+        p = st.text_input("ENCRYPTED KEY", type="password")
+        if st.button("INITIALIZE INTERFACE", use_container_width=True):
             if u == "romildo" and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
     st.stop()
 
-# 5. DASHBOARD OPERACIONAL
+# 5. DASHBOARD
 st.markdown('<div class="logo-box"><span class="u-text">ULTIMATE</span><span class="t-text">TRADER</span><span class="p-badge">PRO</span></div>', unsafe_allow_html=True)
 
-# Saldo em destaque
 st.markdown(f'<div class="banca-wrapper"><div class="banca-box">SALDO: R$ {st.session_state.banca:.2f}</div></div>', unsafe_allow_html=True)
 
-# Painel de Gestão e Parâmetros
+# GESTÃO
 with st.container():
     col_a, col_b, col_c = st.columns(3)
-    st.session_state.banca = col_a.number_input("BANCA ATUAL:", value=float(st.session_state.banca))
-    st.session_state.valor_inicial = col_b.number_input("ENTRADA R$:", value=float(st.session_state.valor_inicial))
+    st.session_state.banca = col_a.number_input("BANCA:", value=float(st.session_state.banca))
+    st.session_state.valor_inicial = col_b.number_input("ENTRADA:", value=float(st.session_state.valor_inicial))
     st.session_state.payout = col_c.number_input("PAYOUT %:", value=int(st.session_state.payout))
 
-st.markdown("---")
+st.markdown("<hr style='border-color: #bf5af2;'>", unsafe_allow_html=True)
 
-# Seleção de Mercado
+# MERCADO
 c1, c2, c3 = st.columns(3)
-tf = c1.selectbox("TIME FRAME:", ["M1", "M5", "M15"])
-est = c2.selectbox("ALGORITMO:", ["Sniper V2", "Turbo Neon", "Quantum"])
-at = c3.selectbox("ATIVO DISPONÍVEL:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "BTC/USD", "ETH/USD"])
+tf = c1.selectbox("TIME:", ["M1", "M5"])
+est = c2.selectbox("ESTRATÉGIA:", ["Sniper V2", "Turbo Purple", "Quantum Blue"])
+at = c3.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "BTC/USD"])
 
-# Motor de Decisão
+# ANÁLISE
 seed = int(datetime.now().timestamp() / 60)
 np.random.seed(seed)
 res = np.random.randint(0, 100)
-if res > 82: sinal, cor = "PUT 🔴", "#ff5252"
-elif res < 18: sinal, cor = "CALL 🟢", "#00e676"
-else: sinal, cor = "ANALISANDO... 🔎", "#94a3b8"
+if res > 80: sinal, cor = "PUT 🔴", "#ff3b30"
+elif res < 20: sinal, cor = "CALL 🟢", "#00e676"
+else: sinal, cor = "ANALISANDO... 🔎", "#00d2ff"
 
 now = datetime.now()
 prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
 faltam = (prox - now).total_seconds()
 
-# Card de Sinal Futurista
 st.markdown(f"""
 <div class="signal-card">
-    <div style="color:#64748b; font-size:14px; letter-spacing:3px;">SYSTEM ANALYSIS: {at}</div>
-    <h1 style="color:{cor}; font-size:70px; margin:20px 0; text-shadow: 0 0 20px {cor}44;">{sinal}</h1>
+    <div style="color:#bf5af2; font-size:14px; letter-spacing:2px;">CYBERPINK ENGINE ACTIVE</div>
+    <h1 style="color:{cor}; font-size:70px; margin:20px 0;">{sinal}</h1>
     <div class="timer">00:{int(faltam):02d}</div>
 </div>
 """, unsafe_allow_html=True)
 
-# Rodapé de Ações
+# AÇÕES
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2 = st.columns(2)
-if b1.button("ENCERRAR CONEXÃO", use_container_width=True):
+if b1.button("LOGOUT", use_container_width=True):
     st.session_state.logado = False
     st.rerun()
-if b2.button("RESETAR TERMINAL", use_container_width=True):
+if b2.button("RESET", use_container_width=True):
     st.session_state.update({'win': 0, 'loss': 0, 'gales': 0, 'banca': 1000.0})
     st.rerun()
 
