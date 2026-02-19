@@ -14,61 +14,80 @@ if 'logado' not in st.session_state:
         'banca': 1000.0, 'valor_atual': 10.0, 'payout': 87
     })
 
-# 2. CSS DINÂMICO (IMAGENS DIFERENTES PARA LOGIN E DASHBOARD)
-img_login = "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?q=80&w=2070&auto=format&fit=crop" # Cidade Cyberpunk Clara
-img_dash = "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop"  # Hardware/Matrix Dark
+# 2. SELEÇÃO DE FUNDOS (CYBERPUNK + TRADER + FUTURO)
+# Login: Estética de trading center futurista
+img_login = "https://img.freepik.com/fotos-premium/uma-sala-com-muitas-telas-e-uma-cidade-ao-fundo-ia-generativa_955841-419.jpg"
+# Dashboard: Matrix/Rede neural discreta
+img_dash = "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop"
 
 bg_url = img_login if not st.session_state.logado else img_dash
 
 st.markdown(f"""
 <style>
     .stApp {{
-        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("{bg_url}");
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("{bg_url}");
         background-size: cover;
         background-position: center;
+        background-attachment: fixed;
     }}
     
-    /* LOGO OFICIAL */
-    .logo-container {{ text-align: center; margin-bottom: 30px; }}
-    .logo-ultimate {{ font-family: 'Arial Black'; font-size: 38px; color: white; }}
-    .logo-trader {{ font-family: 'Arial Black'; font-size: 38px; color: #00e676; text-shadow: 0 0 15px rgba(0,230,118,0.8); }}
-    .logo-pro {{ background: #00e676; color: #020617; padding: 2px 10px; border-radius: 4px; font-size: 20px; vertical-align: middle; margin-left: 5px; font-weight: bold; }}
+    /* LOGO OFICIAL RESTRUTURADA */
+    .logo-container {{ text-align: center; margin-top: 20px; margin-bottom: 40px; }}
+    .logo-ultimate {{ font-family: 'Arial Black', sans-serif; font-size: 42px; color: white; letter-spacing: -2px; }}
+    .logo-trader {{ font-family: 'Arial Black', sans-serif; font-size: 42px; color: #00e676; text-shadow: 0 0 15px rgba(0,230,118,0.8); letter-spacing: -2px; }}
+    .logo-pro {{ 
+        background: #00e676; color: #020617; padding: 2px 10px; border-radius: 4px; 
+        font-size: 20px; vertical-align: middle; margin-left: 10px; font-weight: bold; font-family: Arial;
+    }}
     
     /* SALDO CENTRALIZADO */
     .banca-wrapper {{ display: flex; justify-content: center; margin-bottom: 20px; }}
-    .banca-box {{ background: rgba(6, 78, 59, 0.9); color: #00e676; padding: 10px 40px; border-radius: 15px; font-size: 24px; font-weight: bold; border: 2px solid #059669; box-shadow: 0 0 20px rgba(0,230,118,0.3); }}
-    
-    /* CARDS */
-    .dash-container, .signal-card {{ 
-        background: rgba(15, 23, 42, 0.85); border-radius: 20px; 
-        padding: 20px; text-align: center; border: 1px solid rgba(0,230,118,0.3);
-        backdrop-filter: blur(10px);
+    .banca-box {{ 
+        background: rgba(6, 78, 59, 0.85); color: #00e676; padding: 12px 45px; 
+        border-radius: 15px; font-size: 26px; font-weight: bold; border: 2px solid #00e676; 
+        box-shadow: 0 0 25px rgba(0,230,118,0.4); text-align: center;
     }}
-    .timer-box {{ font-size: 50px; font-weight: bold; color: white; font-family: 'Courier New', monospace; }}
+    
+    /* ESTILO DOS CARDS */
+    .dash-container, .signal-card {{ 
+        background: rgba(10, 15, 28, 0.9); border-radius: 20px; 
+        padding: 25px; text-align: center; border: 1px solid rgba(0,230,118,0.2);
+        backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }}
+    
+    .timer-box {{ font-size: 55px; font-weight: bold; color: white; font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(255,255,255,0.3); }}
+    
+    /* TERMOS NO RODAPÉ */
+    .footer-terms {{
+        margin-top: 40px; padding: 15px; border-top: 1px solid rgba(255,255,255,0.1);
+        text-align: center; color: #64748b; font-size: 11px; line-height: 1.4;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-# 3. LÓGICA DE LOGIN
+# 3. TELA DE LOGIN
 if not st.session_state.logado:
     st.markdown('<div class="logo-container"><span class="logo-ultimate">ULTIMATE</span><span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
     with st.container():
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown("<h3 style='text-align:center; color:white;'>TERMINAL DE ACESSO</h3>", unsafe_allow_html=True)
-            u = st.text_input("ID de Usuário")
-            p = st.text_input("Chave de Segurança", type="password")
-            if st.button("INICIAR SISTEMA", use_container_width=True):
+            st.markdown("<div style='background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #00e676;'>", unsafe_allow_html=True)
+            st.markdown("<h4 style='text-align:center; color:white; margin-top:0;'>ACESSO AO TERMINAL</h4>", unsafe_allow_html=True)
+            u = st.text_input("USUÁRIO")
+            p = st.text_input("SENHA", type="password")
+            if st.button("DESBLOQUEAR SISTEMA", use_container_width=True):
                 if u == "romildo" and p == "12345":
                     st.session_state.logado = True
                     st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# 4. PAINEL LOGADO
+# 4. PAINEL INTERNO (PÓS LOGIN)
 st.markdown('<div class="logo-container"><span class="logo-ultimate">ULTIMATE</span><span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
 
 st.markdown(f'<div class="banca-wrapper"><div class="banca-box">SALDO: R$ {st.session_state.banca:.2f}</div></div>', unsafe_allow_html=True)
 
-# Placar
+# Placar de Operações
 total_ops = st.session_state.win + st.session_state.loss + st.session_state.gales
 st.markdown(f"""
 <div class="dash-container">
@@ -81,20 +100,21 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Seletores e Ativos
+# Área de Sinais
 if not st.session_state.aguardando:
     st.markdown("<br>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     tf = c1.selectbox("TEMPO:", ["M1", "M5"])
-    est = c2.selectbox("ESTRATÉGIA:", ["Turbo", "Sniper", "Moderada"])
-    at = c3.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "BITCOIN", "SOLANA"])
+    est = c2.selectbox("ESTRATÉGIA:", ["Sniper", "Turbo", "Moderada"])
+    at = c3.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "BTC/USD", "ETH/USD"])
 
-    # Simulação de análise técnica
+    # Lógica de Sinal Simbolizada
     seed = int(datetime.now().timestamp() / 60)
     np.random.seed(seed)
     f = np.random.randint(0, 100)
-    if f > 85: sinal, cor = "PUT 🔴", "#ff5252"
-    elif f < 15: sinal, cor = "CALL 🟢", "#00e676"
+    
+    if f > 80: sinal, cor = "PUT 🔴", "#ff5252"
+    elif f < 20: sinal, cor = "CALL 🟢", "#00e676"
     else: sinal, cor = "ANALISANDO... 🔎", "#94a3b8"
 
     now = datetime.now()
@@ -103,21 +123,29 @@ if not st.session_state.aguardando:
 
     st.markdown(f"""
     <div class="signal-card">
-        <h2 style="color:white; margin:0;">{at}</h2>
-        <h1 style="color:{cor}; font-size:60px; margin:20px 0;">{sinal}</h1>
+        <h2 style="color:white; margin:0; letter-spacing: 2px;">{at}</h2>
+        <h1 style="color:{cor}; font-size:65px; margin:15px 0; font-weight: 900;">{sinal}</h1>
         <div class="timer-box">00:{int(faltam):02d}</div>
     </div>
     """, unsafe_allow_html=True)
 
-# Rodapé
+# Rodapé e Termos
 st.markdown("<br>", unsafe_allow_html=True)
 col_f1, col_f2 = st.columns(2)
-if col_f1.button("LOGOUT", use_container_width=True):
+if col_f1.button("ENCERRAR SESSÃO", use_container_width=True):
     st.session_state.logado = False
     st.rerun()
-if col_f2.button("RESETAR", use_container_width=True):
+if col_f2.button("ZERAR HISTÓRICO", use_container_width=True):
     st.session_state.update({'win': 0, 'loss': 0, 'gales': 0, 'banca': 1000.0})
     st.rerun()
+
+st.markdown("""
+<div class="footer-terms">
+    <strong>TERMOS DE USO</strong><br>
+    Este terminal opera sob algoritmos de probabilidade. O trading em ativos financeiros envolve risco elevado.<br>
+    A Ultimate Trader Pro não se responsabiliza por perdas decorrentes de mau uso da ferramenta.
+</div>
+""", unsafe_allow_html=True)
 
 time.sleep(1)
 st.rerun()
