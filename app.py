@@ -4,244 +4,178 @@ import numpy as np
 import time
 from datetime import datetime, timedelta
 
-# 1. CONFIGURAÇÃO INICIAL DA PÁGINA
+# 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Ultimate Trader Pro", layout="centered")
 
-# Inicialização das variáveis de estado (Sessão)
 if 'logado' not in st.session_state:
     st.session_state.update({
         'win': 0, 'loss': 0, 'gales': 0, 'logado': False, 
         'banca': 1000.0, 'valor_inicial': 10.0, 'payout': 87
     })
 
-# 2. IMAGEM DE FUNDO (SETUP TRADER CYBERPUNK ROXO - SEM PESSOAS)
-# Uma sala futurista com telas, neons roxos e vista para a cidade, sem humanos.
-img_background = "https://img.freepik.com/fotos-premium/quarto-de-jogador-neon-cyberpunk-com-computador-e-telas-fundo-futurista-roxo_172276-373.jpg?w=1380"
+# 2. BACKGROUND FUTURISTA (AZUL E VERDE NEON - SEM PESSOAS)
+img_background = "https://img.freepik.com/fotos-premium/fundo-de-tecnologia-futurista-com-neons-azuis-e-verdes-setup-trader-vazio_172276-415.jpg?w=1380"
 
-# 3. ESTILIZAÇÃO CSS (CYBERPINK THEME)
+# 3. CSS CUSTOMIZADO (PALETA AZUL & VERDE NEON)
 st.markdown(f"""
 <style>
-    /* FUNDO GERAL */
+    /* FUNDO PRINCIPAL */
     .stApp {{
-        background: linear-gradient(rgba(10, 0, 30, 0.85), rgba(10, 0, 30, 0.9)), url("{img_background}");
+        background: linear-gradient(rgba(0, 5, 15, 0.9), rgba(0, 5, 15, 0.9)), url("{img_background}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
     }}
     
-    /* LOGO BLINDADA (NÃO DESFIGURA) */
-    .logo-box {{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px 0;
-        margin-bottom: 10px;
-    }}
-    .u-text {{ color: #FFFFFF; font-size: 40px; font-family: 'Arial Black', sans-serif; font-weight: 900; letter-spacing: -1px; }}
-    .t-text {{ color: #d500f9; font-size: 40px; font-family: 'Arial Black', sans-serif; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 15px #d500f9; margin-left: 5px; }}
+    /* LOGO OFICIAL */
+    .logo-box {{ display: flex; align-items: center; justify-content: center; padding: 15px 0; }}
+    .u-text {{ color: #FFFFFF; font-size: 40px; font-family: 'Arial Black'; font-weight: 900; }}
+    .t-text {{ color: #00e676; font-size: 40px; font-family: 'Arial Black'; font-weight: 900; text-shadow: 0 0 15px #00e676; margin-left: 5px; }}
     .p-badge {{ 
-        background: #00e676; color: #000; padding: 4px 10px; border-radius: 4px; 
-        font-size: 16px; margin-left: 10px; font-family: sans-serif; font-weight: bold;
-        box-shadow: 0 0 10px #00e676;
+        background: #00d2ff; color: #000; padding: 2px 10px; border-radius: 4px; 
+        font-size: 18px; margin-left: 10px; font-weight: bold; box-shadow: 0 0 10px #00d2ff;
     }}
     
-    /* CAIXA DE SALDO (ROXO E NEON) */
+    /* CAIXA DE SALDO (CYBER BLUE) */
     .banca-box {{ 
-        background: rgba(20, 0, 40, 0.8); 
-        color: #d500f9; 
-        padding: 15px 40px; 
-        border-radius: 12px; 
-        font-size: 28px; 
-        font-weight: 800; 
-        border: 2px solid #d500f9; 
-        text-align: center; 
-        font-family: 'Courier New', monospace;
-        box-shadow: 0 0 25px rgba(213, 0, 249, 0.3);
-        min-width: 300px;
+        background: rgba(0, 210, 255, 0.05); color: #00e676; padding: 15px; border-radius: 10px; 
+        font-size: 30px; font-weight: 800; border: 2px solid #00d2ff; text-align: center; font-family: monospace;
+        box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
     }}
     
-    /* CARD DE SINAL PRINCIPAL */
+    /* CARD DE SINAL (HIGH PRECISION) */
     .signal-card {{ 
-        background: rgba(15, 5, 25, 0.95); 
-        border-radius: 20px; 
-        padding: 30px; 
-        text-align: center; 
-        border: 1px solid #d500f9; 
-        box-shadow: 0 0 50px rgba(0,0,0,0.8);
-        backdrop-filter: blur(5px);
+        background: rgba(5, 10, 20, 0.95); border-radius: 15px; padding: 30px; text-align: center; 
+        border: 1px solid #00d2ff; box-shadow: 0 0 40px rgba(0, 210, 255, 0.2);
     }}
     
-    /* TAGS DE CONFLUÊNCIA */
+    /* TAGS DE CONFLUÊNCIA VERDE NEON */
     .conf-tag {{ 
-        background: rgba(213, 0, 249, 0.15); 
-        color: #fff; 
-        padding: 6px 12px; 
-        border-radius: 6px; 
-        font-size: 11px; 
-        font-weight: bold; 
-        display: inline-block; 
-        margin: 4px;
-        border: 1px solid #d500f9; 
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        background: rgba(0, 230, 118, 0.1); color: #00e676; padding: 5px 12px; 
+        border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin: 3px;
+        border: 1px solid #00e676; text-transform: uppercase;
     }}
     
-    /* CUSTOMIZAÇÃO DOS INPUTS E BOTÕES */
-    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] {{
-        background-color: rgba(10, 0, 20, 0.9) !important;
-        color: #d500f9 !important;
-        border: 1px solid #d500f9 !important;
-        border-radius: 8px !important;
+    /* INPUTS E BOTÕES */
+    .stNumberInput input, .stSelectbox div[data-baseweb="select"] {{
+        background-color: #050a14 !important;
+        color: #00d2ff !important;
+        border: 1px solid #00d2ff !important;
     }}
-    
     .stButton>button {{
-        background: linear-gradient(90deg, #aa00ff, #d500f9) !important;
-        color: white !important;
-        border: none !important;
-        font-weight: bold !important;
-        transition: all 0.3s ease;
+        background: linear-gradient(90deg, #00d2ff, #00e676) !important;
+        color: #000 !important; font-weight: bold !important; border: none !important;
     }}
     .stButton>button:hover {{
-        box-shadow: 0 0 20px #d500f9 !important;
-        transform: scale(1.02);
+        box-shadow: 0 0 15px #00e676 !important;
     }}
     
-    /* TEXTO BRANCO GERAL */
-    label, .stMarkdown, p {{ color: #e0e0e0 !important; }}
+    label, p {{ color: #00d2ff !important; font-weight: bold; }}
 </style>
 """, unsafe_allow_html=True)
 
-# 4. TELA DE LOGIN
+# 4. SISTEMA DE LOGIN
 if not st.session_state.logado:
     st.markdown('<div class="logo-box"><span class="u-text">ULTIMATE</span><span class="t-text">TRADER</span><span class="p-badge">PRO</span></div>', unsafe_allow_html=True)
-    
-    c1, col_login, c3 = st.columns([1, 2, 1])
-    with col_login:
-        st.markdown("<h4 style='text-align:center; color:#d500f9; letter-spacing:2px;'>SYSTEM ACCESS</h4>", unsafe_allow_html=True)
-        u = st.text_input("USUÁRIO")
-        p = st.text_input("SENHA", type="password")
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("DESBLOQUEAR TERMINAL", use_container_width=True):
+    c1, col, c3 = st.columns([1, 2, 1])
+    with col:
+        st.markdown("<h4 style='text-align:center; color:#00d2ff; letter-spacing:3px;'>SYSTEM ACCESS</h4>", unsafe_allow_html=True)
+        u = st.text_input("USER ID")
+        p = st.text_input("ACCESS KEY", type="password")
+        if st.button("INITIALIZE TERMINAL", use_container_width=True):
             if u == "romildo" and p == "12345":
                 st.session_state.logado = True
                 st.rerun()
     st.stop()
 
-# 5. DASHBOARD PRINCIPAL
-# Topo com Logo
+# 5. DASHBOARD (LOGADO)
 st.markdown('<div class="logo-box"><span class="u-text">ULTIMATE</span><span class="t-text">TRADER</span><span class="p-badge">PRO</span></div>', unsafe_allow_html=True)
 
-# Saldo Centralizado
-st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px;"><div class="banca-box">SALDO: R$ {st.session_state.banca:.2f}</div></div>', unsafe_allow_html=True)
+st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px;"><div class="banca-box">OPERACIONAL: R$ {st.session_state.banca:.2f}</div></div>', unsafe_allow_html=True)
 
-# --- PAINEL DE GESTÃO (BANCA / ENTRADA / PAYOUT) ---
-col_g1, col_g2, col_g3 = st.columns(3)
-st.session_state.banca = col_g1.number_input("BANCA ATUAL:", value=float(st.session_state.banca), step=50.0)
-st.session_state.valor_inicial = col_g2.number_input("VALOR ENTRADA:", value=float(st.session_state.valor_inicial), step=5.0)
-st.session_state.payout = col_g3.number_input("PAYOUT %:", value=int(st.session_state.payout), step=1)
+# GESTÃO
+ca, cb, cc = st.columns(3)
+st.session_state.banca = ca.number_input("BANCA:", value=float(st.session_state.banca))
+st.session_state.valor_inicial = cb.number_input("ENTRADA:", value=float(st.session_state.valor_inicial))
+st.session_state.payout = cc.number_input("PAYOUT %:", value=int(st.session_state.payout))
 
-st.markdown("<hr style='border-color: #d500f9; opacity: 0.3;'>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# --- SELETORES DE ESTRATÉGIA ---
+# CONFIGURAÇÃO DE TESTE (ESTRATÉGIAS DIFERENTES)
 c1, c2, c3 = st.columns(3)
 tf = c1.selectbox("TIME FRAME:", ["M1", "M5"])
-est = c2.selectbox("ESTRATÉGIA (MOTOR):", [
-    "Sniper Pro (RSI+Médias)", 
-    "Turbo V12 (MHI+Fluxo)", 
-    "Quantum Max (Bollinger+Stoch)"
+est = c2.selectbox("ESTRATÉGIA:", [
+    "Sniper (RSI/MM/VOL)", 
+    "Turbo (MHI/PRICE/KELT)", 
+    "Quantum (BB/STOCH/FLOW)"
 ])
-at = c3.selectbox("ATIVO / PARIDADE:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "BTC/USD", "ETH/USD"])
+at = c3.selectbox("ATIVO:", ["EUR/USD (OTC)", "GBP/USD (OTC)", "BTC/USD"])
 
-# 6. MOTOR DE CONFLUÊNCIA TRIPLA (SIMULAÇÃO LÓGICA)
-# Gera aleatoriedade baseada no minuto atual para simular análise em tempo real
+# 6. MOTOR DE CONFLUÊNCIA (3 INDICADORES POR ESTRATÉGIA)
 now = datetime.now()
 seed = int(now.timestamp() / 60)
 np.random.seed(seed)
 
-sinal = "AGUARDANDO..."
-cor_sinal = "#64748b" # Cinza
-tags_confluencia = []
-analise_txt = "ESCANEANDO MERCADO..."
+sinal = "ANALISANDO..."
+cor_sinal = "#4b5563"
+confluencias = []
 
-# Lógica Individual para cada Estratégia
+# Lógica de Teste
 if "Sniper" in est:
-    # Requer: RSI Extremo + Cruzamento de Médias + Volume
+    # 3 Confluências: RSI Extremo + Médias Móveis + Volume
     rsi = np.random.randint(0, 100)
-    media_cross = np.random.choice([True, False])
-    volume = np.random.choice(["ALTO", "BAIXO"])
-    
-    if rsi < 25 and media_cross and volume == "ALTO":
-        sinal = "CALL 🟢"
-        cor_sinal = "#00e676"
-        tags_confluencia = ["RSI SOBREVENDA (OK)", "CRUZAMENTO EMA (OK)", "VOLUME COMPRADOR (OK)"]
-    elif rsi > 75 and media_cross and volume == "ALTO":
-        sinal = "PUT 🔴"
-        cor_sinal = "#ff1744"
-        tags_confluencia = ["RSI SOBRECOMPRA (OK)", "CRUZAMENTO EMA (OK)", "VOLUME VENDEDOR (OK)"]
+    ma_cross = np.random.choice([True, False])
+    vol = np.random.choice([True, False])
+    if rsi < 20 and ma_cross and vol:
+        sinal, cor_sinal, confluencias = "CALL 🟢", "#00e676", ["RSI OVERSOLD", "MA CROSS UP", "VOLUME SPIKE"]
+    elif rsi > 80 and ma_cross and vol:
+        sinal, cor_sinal, confluencias = "PUT 🔴", "#ff1744", ["RSI OVERBOUGHT", "MA CROSS DOWN", "VOLUME SPIKE"]
 
 elif "Turbo" in est:
-    # Requer: Padrão Probabilístico + Suporte/Resistência + Fluxo
-    padrao = np.random.choice(["MHI-1", "MHI-2", "NENHUM"])
-    zona = np.random.choice(["ROMPIMENTO", "RETRAÇÃO", "NEUTRO"])
-    fluxo = np.random.choice(["FAVOR", "CONTRA"])
-    
-    if padrao != "NENHUM" and zona == "RETRAÇÃO" and fluxo == "FAVOR":
-        tipo = "CALL 🟢" if np.random.random() > 0.5 else "PUT 🔴"
-        sinal = tipo
-        cor_sinal = "#00e676" if "CALL" in tipo else "#ff1744"
-        tags_confluencia = [f"PADRÃO {padrao} (OK)", "ZONA RETRAÇÃO (OK)", "FLUXO A FAVOR (OK)"]
+    # 3 Confluências: MHI Probabilística + Price Rejection + Keltner Break
+    mhi = np.random.choice([True, False])
+    rejection = np.random.choice([True, False])
+    break_channel = np.random.choice([True, False])
+    if mhi and rejection and break_channel:
+        tipo = np.random.choice(["CALL 🟢", "PUT 🔴"])
+        sinal, cor_sinal = (tipo, "#00e676") if "CALL" in tipo else (tipo, "#ff1744")
+        confluencias = ["MHI PATTERN", "PRICE REJECTION", "KELTNER BREAKOUT"]
 
 elif "Quantum" in est:
-    # Requer: Bandas de Bollinger + Estocástico + Price Action
-    bb = np.random.choice(["TOPO", "FUNDO", "MEIO"])
+    # 3 Confluências: Bollinger Touch + Stochastic + Order Flow
+    bb_touch = np.random.choice([True, False])
     stoch = np.random.randint(0, 100)
-    candle = np.random.choice(["MARTELO", "ENGOLFO", "DOJI"])
-    
-    if bb == "FUNDO" and stoch < 20 and candle != "DOJI":
-        sinal = "CALL 🟢"
-        cor_sinal = "#00e676"
-        tags_confluencia = ["BB TOQUE INF (OK)", "STOCH 20% (OK)", "PADRÃO REVERSÃO (OK)"]
-    elif bb == "TOPO" and stoch > 80 and candle != "DOJI":
-        sinal = "PUT 🔴"
-        cor_sinal = "#ff1744"
-        tags_confluencia = ["BB TOQUE SUP (OK)", "STOCH 80% (OK)", "PADRÃO REVERSÃO (OK)"]
+    flow = np.random.choice(["STRONG", "WEAK"])
+    if bb_touch and stoch < 15 and flow == "STRONG":
+        sinal, cor_sinal, confluencias = "CALL 🟢", "#00e676", ["BB LOWER TOUCH", "STOCH LOW", "FLOW BUY"]
+    elif bb_touch and stoch > 85 and flow == "STRONG":
+        sinal, cor_sinal, confluencias = "PUT 🔴", "#ff1744", ["BB UPPER TOUCH", "STOCH HIGH", "FLOW SELL"]
 
-# Se não bateu as 3 confluências
-if not tags_confluencia:
-    analise_txt = "BUSCANDO PADRÃO DE ALTA PRECISÃO..."
-else:
-    analise_txt = "CONFLUÊNCIA TRIPLA CONFIRMADA"
-
-# Timer Regressivo
+# Timer
 prox = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
 faltam = (prox - now).total_seconds()
 
-# 7. EXIBIÇÃO DO SINAL (CARD)
+# 7. CARD DE SINAL (UI)
 st.markdown(f"""
 <div class="signal-card">
-    <div style="color:#d500f9; font-weight:bold; font-size:12px; letter-spacing:2px; margin-bottom:5px;">SISTEMA: {est}</div>
-    <div style="color:#ffffff; font-size:14px; opacity:0.8; margin-bottom:15px;">{analise_txt}</div>
-    
-    <h1 style="color:{cor_sinal}; font-size:75px; margin:10px 0; text-shadow: 0 0 30px {cor_sinal}66;">{sinal}</h1>
-    
-    <div style="font-size: 50px; font-weight: bold; color: white; font-family: monospace;">00:{int(faltam):02d}</div>
-    
+    <div style="color:#00e676; font-size:12px; letter-spacing:2px; margin-bottom:10px;">PROBABILITY UNIT: {at}</div>
+    <h1 style="color:{cor_sinal}; font-size:80px; margin:15px 0; text-shadow: 0 0 30px {cor_sinal}66;">{sinal}</h1>
+    <div style="font-size: 55px; font-weight: bold; color: #00d2ff; font-family: monospace;">00:{int(faltam):02d}</div>
     <div style="margin-top:20px;">
-        {''.join([f'<span class="conf-tag">{tag}</span>' for tag in tags_confluencia])}
+        {''.join([f'<span class="conf-tag">{c}</span>' for c in confluencias]) if confluencias else '<span class="conf-tag" style="border-color:#4b5563; color:#4b5563;">SCANNING CONFLUENCES...</span>'}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# 8. RODAPÉ (AÇÕES)
+# 8. AÇÕES
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2 = st.columns(2)
-if b1.button("LOGOUT / SAIR", use_container_width=True):
+if b1.button("EXIT TERMINAL", use_container_width=True):
     st.session_state.logado = False
     st.rerun()
-if b2.button("LIMPAR PLACAR", use_container_width=True):
+if b2.button("WIPE DATA", use_container_width=True):
     st.session_state.update({'win': 0, 'loss': 0, 'gales': 0})
     st.rerun()
 
-# Atualização automática
 time.sleep(1)
 st.rerun()
