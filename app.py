@@ -57,27 +57,30 @@ st.markdown("""
     .logo-pro { background: #00e676; color: #020617; padding: 2px 8px; border-radius: 4px; font-size: 18px; vertical-align: middle; margin-left: 5px; }
     .dash-container { background: rgba(30, 41, 59, 0.7); border-radius: 20px; padding: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
     .signal-card { background: rgba(30, 41, 59, 0.7); border-radius: 20px; padding: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-    .banca-box { background: #064e3b; color: #00e676; padding: 10px; border-radius: 10px; font-size: 20px; font-weight: bold; margin-bottom: 10px; border: 1px solid #059669; }
+    .banca-box { background: #064e3b; color: #00e676; padding: 10px; border-radius: 10px; font-size: 20px; font-weight: bold; margin-bottom: 10px; border: 1px solid #059669; text-align: center; }
     .valor-badge { background: #1e293b; color: #fbbf24; padding: 5px 15px; border-radius: 50px; font-weight: bold; font-size: 18px; border: 1px solid #fbbf24; display: inline-block; margin-bottom: 10px; }
     .timer-box { font-size: 48px; font-weight: bold; color: white; font-family: monospace; }
 </style>
 """, unsafe_allow_html=True)
 
-# 4. LOGIN
+# 4. LOGIN (COM TRAVA DE SEGURANÇA DEFINITIVA)
 if not st.session_state.logado:
     st.markdown('<div class="logo-container"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
-    u = st.text_input("Usuário")
-    p = st.text_input("Senha", type="password")
-    if st.button("ACEDER", use_container_width=True):
-        if u == "romildo" and p == "12345":
-            st.session_state.logado = True
-            st.rerun()
-    st.stop()
+    with st.container():
+        u = st.text_input("Usuário")
+        p = st.text_input("Senha", type="password")
+        if st.button("ACESSAR TERMINAL", use_container_width=True):
+            if u == "romildo" and p == "12345":
+                st.session_state.logado = True
+                st.rerun()
+            else:
+                st.error("Credenciais Inválidas")
+    st.stop() # ESSA LINHA IMPEDE QUE O DASHBOARD APAREÇA ANTES DO LOGIN
 
-# 5. TERMINAL
+# 5. TERMINAL (SÓ CARREGA APÓS LOGIN)
 st.markdown('<div class="logo-container"><span class="logo-ultimate">ULTIMATE</span> <span class="logo-trader">TRADER</span><span class="logo-pro">PRO</span></div>', unsafe_allow_html=True)
 
-# Dashboard de Banca e Operações
+# Painel de Controle de Banca
 total_gales = st.session_state.get('gales', 0)
 total_ops = st.session_state.win + st.session_state.loss + total_gales
 taxa = (st.session_state.win / (st.session_state.win + st.session_state.loss) * 100) if (st.session_state.win + st.session_state.loss) > 0 else 0
@@ -96,7 +99,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Definições de Gestão (Sendo feitas apenas antes da operação)
+# Lógica de Operação em Curso
 if not st.session_state.aguardando:
     c_g1, c_g2, c_g3 = st.columns(3)
     banca_init = c_g1.number_input("BANCA INICIAL:", value=float(st.session_state.banca), step=50.0)
@@ -113,13 +116,13 @@ if st.session_state.aguardando:
     st.markdown(f"""
     <div class='signal-card'>
         <div class='valor-badge'>EM OPERAÇÃO: R$ {st.session_state.valor_atual_operacao:.2f}</div>
-        <h3>CONFIRMAR RESULTADO?</h3>
+        <h3 style="color:white;">CONFIRMAR RESULTADO?</h3>
     """, unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     
     lucro_possivel = st.session_state.valor_atual_operacao * (st.session_state.payout / 100)
 
-    if c1.button("WIN", use_container_width=True):
+    if c1.button("WIN ✅", use_container_width=True):
         st.session_state.win += 1
         st.session_state.banca += (st.session_state.valor_atual_operacao + lucro_possivel)
         salvar_dados(st.session_state.win, st.session_state.loss)
@@ -127,14 +130,14 @@ if st.session_state.aguardando:
         st.session_state.update({'aguardando': False, 'som_tocado': False})
         st.rerun()
         
-    if c2.button("LOSS", use_container_width=True):
+    if c2.button("LOSS ❌", use_container_width=True):
         st.session_state.loss += 1
         salvar_dados(st.session_state.win, st.session_state.loss)
         st.session_state.valor_atual_operacao = st.session_state.valor_inicial
         st.session_state.update({'aguardando': False, 'som_tocado': False})
         st.rerun()
         
-    if c3.button("GALE", use_container_width=True):
+    if c3.button("GALE 🔄", use_container_width=True):
         nova_entrada = st.session_state.valor_atual_operacao * 2
         if st.session_state.banca >= nova_entrada:
             st.session_state.banca -= nova_entrada
@@ -146,13 +149,14 @@ if st.session_state.aguardando:
             st.error("Saldo insuficiente para Gale!")
         st.rerun()
         
-    if c4.button("PULAR", use_container_width=True):
-        st.session_state.banca += st.session_state.valor_atual_operacao # Estorna o valor
+    if c4.button("PULAR ⏭️", use_container_width=True):
+        st.session_state.banca += st.session_state.valor_atual_operacao # Estorna
         st.session_state.valor_atual_operacao = st.session_state.valor_inicial
         st.session_state.aguardando = False
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 else:
+    # Seletores de Ativo e Estratégia
     cols = st.columns([1, 1, 1.5])
     tf = cols[0].selectbox("TEMPO:", ["M1", "M5"])
     est = cols[1].selectbox("ESTRATÉGIA:", ["Turbo", "Moderada", "Sniper"])
@@ -186,15 +190,15 @@ else:
             st.session_state.aguardando = True
             st.rerun()
         else:
-            st.warning("SALDO INSUFICIENTE PARA ESTA OPERAÇÃO!")
+            st.warning("SALDO INSUFICIENTE PARA OPERAÇÃO!")
 
 # 6. RODAPÉ
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2 = st.columns(2)
-if b1.button("SAIR", use_container_width=True):
+if b1.button("LOGOUT / SAIR", use_container_width=True):
     st.session_state.logado = False
     st.rerun()
-if b2.button("RESETAR SESSÃO", use_container_width=True):
+if b2.button("ZERAR HISTÓRICO", use_container_width=True):
     salvar_dados(0, 0)
     st.session_state.update({'win': 0, 'loss': 0, 'gales': 0, 'banca': 1000.0})
     st.rerun()
